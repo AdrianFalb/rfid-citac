@@ -13,7 +13,7 @@ V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka
 
 Čas príchodu a odchodu sa bude vypisovať na displej.
 
-Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6. RFID čítačka bude s mikrokontrolérom komunikovať pomocou SPI rozhrania. Displej bude komunikovať prostredníctvom I^2^C zbernice alebo respektíve cez SPI rozhranie podľa vhodnosti.
+Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6. RFID čítačka bude s mikrokontrolérom komunikovať pomocou SPI rozhrania. Displej bude komunikovať prostredníctvom I2C zbernice alebo respektíve cez SPI rozhranie podľa vhodnosti.
 Mikrokontrolér bude **MASTER** zariadením a RFID čítačka a displej budú **SLAVE** zariadeniami.
 
 ## Problémy
