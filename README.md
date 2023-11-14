@@ -5,13 +5,13 @@
 Cieľom projektu je vytvoriť **zamestnanecký systém**, ktorý pomocou kariet alebo klúčeniek s integrovanými čipmi bude zaznamenávať dochádzku zamestnancov, príchody, odchody a obedové prestávky.
 Pri príchode do práce priloží zamestnanec kartičku či klúčenku k RFID čítačke čím sa na displeji vypíše čas príchodu. Pri úspešnom načítaní karty sa bude podávať zamestnancovi spätná väzba prostredníctvom displeja a LED diód. Pri odchode zamestnanec priloží kartu k RFID čítačke čim sa zaznamená čas odchodu. Po príchode bude nasledujúce načítanie karty (odchod) reprezentovať začiatok obedovej prestávky. Nasledujúci príchod bude zaznamenaný ako koniec obedovej prestávky.
 
-Pri správnom načítaní karty sa bude zamestnancovi podávať spätná väzba pomocou displeja, zelenej a červenej LED diódy. Pri úspešnom načítaní karty sa rozsvieti zelená LED dióda na dobu 3 sekúnd a vypíše sa na displej čas príchodu respektíve odchodu. Pri neúspešnom čítaní karty zasvieti červená LED dióda po rovnakú dobu ako pri úspešnom čítaní a vypíše sa na displej čas odchodu.
+Pri správnom načítaní karty sa bude zamestnancovi podávať spätná väzba pomocou displeja, zelenej a červenej LED diódy. Pri úspešnom načítaní karty pri príchode a odchode sa rozsvieti zelená LED dióda na dobu 3 sekúnd a vypíše sa na displej čas príchodu respektíve odchodu. Pri neúspešnom čítaní karty zasvieti červená LED dióda po rovnakú dobu ako pri úspešnom čítaní a vypíše sa na displej, že čítanie bolo neúspešné.
+
+Každá karta alebo kľúčenka má priradený unikátny kód na základe, ktorého sa dá zistiť, ktorý zamestnanec priložil k čítačke kartu respektíve klúčenku.
 
 ## Popis systému
 ### Popis komponentov
-V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522. Každá karta, kľúčenka alebo náramok má priradený unikátny kód a podľa toho sa dá zistiť ktorý modul je priložený k čítačke. Modul typu MF RC522 pracuje s frekvenciou 13,56 MHz.
-
-Čas príchodu a odchodu sa bude vypisovať na displej.
+V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522.
 
 Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6. RFID čítačka bude s mikrokontrolérom komunikovať pomocou SPI rozhrania. Displej bude komunikovať prostredníctvom I2C zbernice respektíve cez SPI rozhranie podľa vhodnosti.
 Mikrokontrolér bude **MASTER** zariadením a RFID čítačka a displej budú **SLAVE** zariadeniami.
