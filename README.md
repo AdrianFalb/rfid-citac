@@ -1,4 +1,4 @@
-# Zamestnanecký dochádzkový systém s využitím RFID kariet
+# Zamestnanecký dochádzkový systém s využitím RFID čítačky
 
 ## Popis projektu
 ### Stručný opis zamestnaneckého systému
