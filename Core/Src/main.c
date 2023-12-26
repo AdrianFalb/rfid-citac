@@ -19,14 +19,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "fatfs.h"
-#include "rtc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +58,13 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define BUFFER_SIZE 128
+#define UART_BUFFER_SIZE 50
 
+char buff[BUFFER_SIZE];
+char uart_buf[UART_BUFFER_SIZE];
+
+char path[] = "400.txt";
 /* USER CODE END 0 */
 
 /**
@@ -69,6 +75,16 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+
+	  FATFS fs;
+	  FATFS *pfs;
+      FIL fil;
+	  FRESULT fres;
+	  DWORD fre_clust;
+	  uint32_t totalSpace, freeSpace;
+	  uint32_t uart_buf_len;
+
+	  uint8_t r;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -89,11 +105,86 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_RTC_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+
+	  resetBuffer(buff, BUFFER_SIZE);
+
+	  uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
+	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+	  resetBuffer(uart_buf,UART_BUFFER_SIZE);
+
+	  HAL_Delay(1000);
+
+	  if(f_mount(&fs, "", 1) != FR_OK)
+		  Error_Handler();
+
+	  r = openFileForAppend(&fil, path);
+	  if(r == 0)
+		  Error_Handler();
+
+
+	  fres = f_getfree("", &fre_clust, &pfs);
+	  if(fres != FR_OK)
+		  Error_Handler();
+
+	  totalSpace = calculateTotalCardSpace(pfs);
+	  freeSpace = calculateFreeCardSpace(pfs, &fre_clust);
+
+	  uart_buf_len = sprintf(uart_buf, "Total SD space: %d\r\n", totalSpace);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+	  resetBuffer(uart_buf, UART_BUFFER_SIZE);
+
+	  uart_buf_len = sprintf(uart_buf, "Free SD space: %d\r\n", freeSpace);
+	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+	  resetBuffer(uart_buf, UART_BUFFER_SIZE);
+
+	  if(freeSpace < 1)
+		  Error_Handler();
+
+	  f_puts("This is a test!\n", &fil);
+	  f_puts("Hello World!\n", &fil);
+
+	  fres = f_close(&fil);
+	  if(fres != FR_OK)
+		  Error_Handler();
+
+
+	  r = openFileForAppend(&fil, path);
+	  if(r == 0)
+		  Error_Handler();
+
+	  f_puts("This is the appended line!", &fil);
+
+	  fres = f_close(&fil);
+	  if(fres != FR_OK)
+		  Error_Handler();
+
+
+	  r = openFileForReading(&fil, path);
+	  if(r ==0)
+		  Error_Handler();
+
+
+	  while(f_gets(buff, sizeof(buff), &fil))
+	  {
+			/* SWV output */
+		  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
+	  }
+
+		/* Close file */
+	  fres = f_close(&fil);
+	  if(fres != FR_OK)
+		  Error_Handler();
+
+		/* Unmount SDCARD */
+	  fres = f_mount(NULL, "", 1);
+	  if(fres != FR_OK)
+		  Error_Handler();
+
+	  resetBuffer(buff,BUFFER_SIZE);
 
   /* USER CODE END 2 */
 
@@ -116,15 +207,13 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -144,15 +233,14 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
 }
 
 /* USER CODE BEGIN 4 */
+void resetBuffer(char* buffer, uint32_t buff_size)
+{
+	for(int i = 0; i < buff_size; i++)
+		buffer[i] = '\0';
+}
 
 /* USER CODE END 4 */
 

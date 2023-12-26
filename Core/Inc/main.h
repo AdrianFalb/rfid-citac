@@ -57,17 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define CD_CS_Pin GPIO_PIN_0
-#define CD_CS_GPIO_Port GPIOA
-#define DISPLAY_CS_Pin GPIO_PIN_5
-#define DISPLAY_CS_GPIO_Port GPIOB
-#define DISPLAY_CD_Pin GPIO_PIN_6
-#define DISPLAY_CD_GPIO_Port GPIOB
-#define DISPLAY_RESET_Pin GPIO_PIN_7
-#define DISPLAY_RESET_GPIO_Port GPIOB
+#define SD_CS_Pin GPIO_PIN_8
+#define SD_CS_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
+#define SD_SPI_HANDLE hspi1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

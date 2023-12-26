@@ -51,7 +51,8 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+volatile uint8_t FatFsCnt = 0;
+extern volatile uint16_t timer1, timer2;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -183,6 +184,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
+	/* USER CODE BEGIN SysTick_IRQn 0 */
+
+
 
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
