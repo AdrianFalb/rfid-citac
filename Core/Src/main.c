@@ -52,6 +52,7 @@ RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart2;
 
+<<<<<<< Updated upstream
 /* USER CODE BEGIN PV */
 RTC_TimeTypeDef curTime;
 UART_HandleTypeDef huart1;
@@ -59,14 +60,34 @@ char bld[40];
 char buf[25];
 char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 char *delim = " :";
+=======
+UART_HandleTypeDef huart2;
+>>>>>>> Stashed changes
 
+/* USER CODE BEGIN PV */
+RTC_TimeTypeDef curTime;
+UART_HandleTypeDef huart1;
+char bld[40];
+char buf[25];
+char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+char *delim = " :";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+<<<<<<< Updated upstream
 static void MX_GPIO_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART2_UART_Init(void);
+=======
+void MX_GPIO_Init(void);
+void MX_RTC_Init(void);
+void MX_USART2_UART_Init(void);
+/* USER CODE BEGIN PFP */
+void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
+void showClock(int seconds);
+int str2month(const char *str);
+>>>>>>> Stashed changes
 /* USER CODE BEGIN PFP */
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
 void showClock(int seconds);
@@ -199,6 +220,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
+<<<<<<< Updated upstream
 static void MX_RTC_Init(void)
 {
 
@@ -256,12 +278,16 @@ static void MX_RTC_Init(void)
   /* USER CODE END RTC_Init 2 */
 
 }
+=======
+
+>>>>>>> Stashed changes
 
 /**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
+<<<<<<< Updated upstream
 static void MX_USART2_UART_Init(void)
 {
 
@@ -308,6 +334,10 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
+=======
+
+
+>>>>>>> Stashed changes
 
 /* USER CODE BEGIN 4 */
 
@@ -349,6 +379,7 @@ int str2month(const char *str) {
     return -1;  // Invalid month
 }
 
+<<<<<<< Updated upstream
 /*
 void showClock(int seconds)
 {
@@ -369,6 +400,9 @@ void showClock(int seconds)
   HAL_UART_Transmit(&huart2, (uint8_t *)timeString, strlen(timeString), HAL_MAX_DELAY);
 
 }*/
+=======
+
+>>>>>>> Stashed changes
 
 void showClock(int seconds)
 {
