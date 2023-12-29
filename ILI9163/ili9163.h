@@ -30,9 +30,12 @@
  * @copyright parts (C) 2012 NoccyLabs
  */
 
-#ifndef ILI1963_H_
-#define ILI1963_H_
+#ifndef ILI9163_H_
+#define ILI9163_H_
 
+/* Includes */
+#include "main.h"
+#include "spi.h"
 #include <stdint.h>
 
 // Definitions for data-bus (port D)
@@ -158,4 +161,4 @@ void lcdPutCh(unsigned char character, uint8_t x, uint8_t y, uint16_t fgColour, 
 void lcdPutS(const char *string, uint8_t x, uint8_t y, uint16_t fgColour, uint16_t bgColour);
 
 
-#endif /* ILI1963_H_ */
+#endif /* ILI9163_H_ */

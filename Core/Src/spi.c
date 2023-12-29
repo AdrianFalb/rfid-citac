@@ -37,6 +37,7 @@ void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 1 */
 
   /* USER CODE END SPI1_Init 1 */
+ // SPI1->CR2 |= 1 << 12;
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -51,6 +52,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.CRCPolynomial = 7;
   hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
   hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Instance->CR2 |= (1 << 12);
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();

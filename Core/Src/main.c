@@ -93,18 +93,32 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   MX_FATFS_Init();
+
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(GPIOB, DISPLAY_CS_Pin, GPIO_PIN_SET);
+
+  HAL_Delay(100);
+  lcdInitialise(192);
+  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+
+  lcdPutS("VRS 2019", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));
+  lcdPutS("Cvicenie 8", lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+  lcdPutS("SPI komunikacia", lcdTextX(2), lcdTextY(5), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
+   uint8_t state = 0;
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-    /* USER CODE END WHILE */
+    {
 
-    /* USER CODE BEGIN 3 */
-  }
+  		state ? lcdFilledRectangle(10, 75, 34, 99, decodeRgbValue(31, 0, 0)) : lcdFilledRectangle(10, 75, 34, 99, decodeRgbValue(0, 31, 0));
+  		state ^= 1;
+
+  		HAL_Delay(100);
+    }
   /* USER CODE END 3 */
 }
 
