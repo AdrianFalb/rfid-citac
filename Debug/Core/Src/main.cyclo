@@ -1,5 +1,0 @@
-../Core/Src/main.c:89:5:main	6
-../Core/Src/main.c:191:6:SystemClock_Config	4
-../Core/Src/main.c:234:6:setBuildTime	3
-../Core/Src/main.c:262:5:str2month	3
-../Core/Src/main.c:278:6:Error_Handler	1
