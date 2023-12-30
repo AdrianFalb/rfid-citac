@@ -57,8 +57,16 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MFRC522_CS_Pin GPIO_PIN_10
+#define SD_CS_Pin GPIO_PIN_8
+#define SD_CS_GPIO_Port GPIOA
+#define MFRC522_CS_Pin GPIO_PIN_9
 #define MFRC522_CS_GPIO_Port GPIOA
+#define DISPLAY_CS_PIN_Pin GPIO_PIN_10
+#define DISPLAY_CS_PIN_GPIO_Port GPIOA
+#define DISPLAY_CD_PIN_Pin GPIO_PIN_11
+#define DISPLAY_CD_PIN_GPIO_Port GPIOA
+#define DISPLAY_RESET_PIN_Pin GPIO_PIN_12
+#define DISPLAY_RESET_PIN_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
