@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "fatfs.h"
+#include "rtc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -28,6 +28,15 @@
 #include "string.h"
 #include "mfrc522.h"
 #include "stdio.h"
+#include "stm32f3xx_hal.h"
+#include "stm32f3xx_hal_rtc.h"
+#include "stm32f3xx_ll_rtc.h"
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
+#include "time.h"
+#include "stm32f3xx_hal_conf.h"
+#include "stm32f3xx_it.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,10 +59,20 @@
 /* USER CODE BEGIN PV */
 char version_buffer[128];
 char message_buffer[128];
+
+RTC_TimeTypeDef curTime;
+UART_HandleTypeDef huart1;
+char bld[40];
+char buf[25];
+char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+char *delim = " :";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_RTC_Init(void);
+void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,9 +112,32 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
-  MX_FATFS_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+  RTC_DateTypeDef sDate;
+  RTC_TimeTypeDef sTime;
+  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sTime.Hours = 0x12;
+  sTime.Minutes = 0x00;
+  sTime.Seconds = 0x00;
+  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
+  if (sDate.Year + 2000 < 2019)
+  {
+      setBuildTime(&sDate, &sTime);
+  }
 
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
   // Initialize MFRC522 and read the version
   uint8_t status;
   uint8_t card_buffer[MAX_LEN+1];
@@ -150,13 +192,15 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -176,9 +220,54 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
+
+
+void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
+{
+    // Timestamp format: "Mar 3 2019 12:34:56"
+    snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
+    char *token = strtok(bld, delim);
+    while (token)
+    {
+        int m = str2month((const char *)token);
+        if (m > 0)
+        {
+            date->Month = m;
+            token = strtok(NULL, delim);
+            date->Date = atoi(token);
+            token = strtok(NULL, delim);
+            date->Year = atoi(token) - 2000; // Assuming it's a two-digit year representation
+            token = strtok(NULL, delim);
+            time->Hours = atoi(token);
+            token = strtok(NULL, delim);
+            time->Minutes = atoi(token);
+            token = strtok(NULL, delim);
+            time->Seconds = atoi(token);
+        }
+        token = strtok(NULL, delim);
+    }
+    snprintf(bld, 40, "Build: %02d-%02d-%02d %02d:%02d:%02d\n", date->Year + 2000, date->Month, date->Date, time->Hours, time->Minutes, time->Seconds);
+    // Output to serial or logging mechanism of your choice
+}
+
+int str2month(const char *str) {
+    for (int i = 0; i < 12; ++i) {
+        if (strncmp(str, months[i], 3) == 0) {
+            return i + 1;  // Months are 1-based in the RTC_DateTypeDef structure
+        }
+    }
+    return -1;  // Invalid month
+}
+
 
 /* USER CODE END 4 */
 
