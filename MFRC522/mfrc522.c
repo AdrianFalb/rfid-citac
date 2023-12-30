@@ -8,7 +8,7 @@
 
 /* Defines */
 #define RC522_CS_GPIO_Port GPIOA
-#define RC522_CS_Pin GPIO_PIN_10
+#define RC522_CS_Pin GPIO_PIN_9
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Basic interface functions for communicating with the MFRC522
@@ -29,8 +29,8 @@ void MFRC522_PCD_Write(uint8_t reg_addr, uint8_t value)
 	// Prepare address for write mode
 	uint8_t addr = (((reg_addr << 1) & 0x7E));
 
-	HAL_SPI_Transmit(&hspi1, &addr, 1, 250);
-	HAL_SPI_Transmit(&hspi1, &value, 1, 250);
+	HAL_SPI_Transmit(&hspi1, &addr, 1, 500);
+	HAL_SPI_Transmit(&hspi1, &value, 1, 500);
 
 	// Clear the select line - release the slave
 	HAL_GPIO_WritePin(RC522_CS_GPIO_Port, RC522_CS_Pin, GPIO_PIN_SET);
@@ -75,8 +75,8 @@ uint8_t MFRC522_PCD_Read(uint8_t reg_addr) {
 	// Set the select line so we can start transferring - select slave
 	HAL_GPIO_WritePin(RC522_CS_GPIO_Port, RC522_CS_Pin, GPIO_PIN_RESET);
 
-	HAL_SPI_Transmit(&hspi1, &addr, 1, 250);
-	HAL_SPI_Receive(&hspi1, &value, 1, 250);
+	HAL_SPI_Transmit(&hspi1, &addr, 1, 500);
+	HAL_SPI_Receive(&hspi1, &value, 1, 500);
 
 	// Clear the select line - release slave
 	HAL_GPIO_WritePin(RC522_CS_GPIO_Port, RC522_CS_Pin, GPIO_PIN_SET);
