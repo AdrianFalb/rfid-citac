@@ -20,7 +20,6 @@
 #include "main.h"
 #include "fatfs.h"
 #include "spi.h"
-#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -64,7 +63,7 @@ void SystemClock_Config(void);
 char buff[BUFFER_SIZE];
 char uart_buf[UART_BUFFER_SIZE];
 
-char path[] = "400.txt";
+char path[] = "newFile.txt";
 /* USER CODE END 0 */
 
 /**
@@ -74,17 +73,15 @@ char path[] = "400.txt";
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  FATFS fs;
+  FATFS *pfs;
+  FIL fil;
+  FRESULT fres;
+  DWORD fre_clust;
+  uint32_t totalSpace, freeSpace;
+  uint32_t uart_buf_len;
 
-
-	  FATFS fs;
-	  FATFS *pfs;
-      FIL fil;
-	  FRESULT fres;
-	  DWORD fre_clust;
-	  uint32_t totalSpace, freeSpace;
-	  uint32_t uart_buf_len;
-
-	  uint8_t r;
+  uint8_t r;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -106,86 +103,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_USART2_UART_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-
-	  resetBuffer(buff, BUFFER_SIZE);
-
-	  uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
-	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-	  resetBuffer(uart_buf,UART_BUFFER_SIZE);
-
-	  HAL_Delay(1000);
-
-	  if(f_mount(&fs, "", 1) != FR_OK)
-		  Error_Handler();
-
-	  r = openFileForAppend(&fil, path);
-	  if(r == 0)
-		  Error_Handler();
-
-
-	  fres = f_getfree("", &fre_clust, &pfs);
-	  if(fres != FR_OK)
-		  Error_Handler();
-
-	  totalSpace = calculateTotalCardSpace(pfs);
-	  freeSpace = calculateFreeCardSpace(pfs, &fre_clust);
-
-	  uart_buf_len = sprintf(uart_buf, "Total SD space: %d\r\n", totalSpace);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-	  resetBuffer(uart_buf, UART_BUFFER_SIZE);
-
-	  uart_buf_len = sprintf(uart_buf, "Free SD space: %d\r\n", freeSpace);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-	  resetBuffer(uart_buf, UART_BUFFER_SIZE);
-
-	  if(freeSpace < 1)
-		  Error_Handler();
-
-	  f_puts("This is a test!\n", &fil);
-	  f_puts("Hello World!\n", &fil);
-
-	  fres = f_close(&fil);
-	  if(fres != FR_OK)
-		  Error_Handler();
-
-
-	  r = openFileForAppend(&fil, path);
-	  if(r == 0)
-		  Error_Handler();
-
-	  f_puts("This is the appended line!", &fil);
-
-	  fres = f_close(&fil);
-	  if(fres != FR_OK)
-		  Error_Handler();
-
-
-	  r = openFileForReading(&fil, path);
-	  if(r ==0)
-		  Error_Handler();
-
-
-	  while(f_gets(buff, sizeof(buff), &fil))
-	  {
-			/* SWV output */
-		  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
-	  }
-
-		/* Close file */
-	  fres = f_close(&fil);
-	  if(fres != FR_OK)
-		  Error_Handler();
-
-		/* Unmount SDCARD */
-	  fres = f_mount(NULL, "", 1);
-	  if(fres != FR_OK)
-		  Error_Handler();
-
-	  resetBuffer(buff,BUFFER_SIZE);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
