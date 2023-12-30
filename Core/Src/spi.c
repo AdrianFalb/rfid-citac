@@ -21,7 +21,7 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-
+SPI_HandleTypeDef hspi1;
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -117,5 +117,27 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void SPI_TransmitData(SPI_HandleTypeDef* hspi, uint8_t* data, uint16_t size)
+{
+	HAL_SPI_Transmit(hspi, data, size, 1000);
+}
+
+void SPI_RecieveData(SPI_HandleTypeDef* hspi, uint8_t* dataTx, uint8_t* dataRx, uint16_t size)
+{
+	HAL_SPI_TransmitReceive(hspi, dataTx, dataRx, size, 1000);
+}
+
+
+void CS_DESELECT(GPIO_TypeDef * gpio_port, uint16_t gpioPin)
+{
+	HAL_GPIO_WritePin(gpio_port, gpioPin, GPIO_PIN_SET);
+	HAL_Delay(2);
+}
+
+void CS_SELECT(GPIO_TypeDef * gpio_port, uint16_t gpioPin)
+{
+	HAL_GPIO_WritePin(gpio_port, gpioPin, GPIO_PIN_RESET);
+	HAL_Delay(2);
+}
 
 /* USER CODE END 1 */

@@ -35,13 +35,18 @@ extern "C" {
 extern SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN Private defines */
-
+extern HAL_StatusTypeDef halStatus;
 /* USER CODE END Private defines */
 
 void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void SPI_TransmitData(SPI_HandleTypeDef* hspi, uint8_t* data, uint16_t size);
+void SPI_RecieveData(SPI_HandleTypeDef* hspi, uint8_t* dataTx, uint8_t* dataRx, uint16_t size);
 
+
+void CS_DESELECT(GPIO_TypeDef* gpio_port, uint16_t gpioPin);
+void CS_SELECT(GPIO_TypeDef* gpio_port, uint16_t gpioPin);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

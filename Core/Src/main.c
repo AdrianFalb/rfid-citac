@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 #include "rtc.h"
 #include "spi.h"
 #include "usart.h"
@@ -37,6 +38,8 @@
 #include "time.h"
 #include "stm32f3xx_hal_conf.h"
 #include "stm32f3xx_it.h"
+
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,13 +69,18 @@ char bld[40];
 char buf[25];
 char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 char *delim = " :";
+
+#define BUFFER_SIZE 128
+#define UART_BUFFER_SIZE 50
+
+char buff[BUFFER_SIZE];
+char uart_buf[UART_BUFFER_SIZE];
+
+char path[] = "newFile.txt";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_RTC_Init(void);
-void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -89,7 +97,15 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	  FATFS fs;
+	  FATFS *pfs;
+	  FIL fil;
+	  FRESULT fres;
+	  DWORD fre_clust;
+	  uint32_t totalSpace, freeSpace;
+	  uint32_t uart_buf_len;
 
+	  uint8_t r;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -112,9 +128,85 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
+  MX_FATFS_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+  resetBuffer(buff, BUFFER_SIZE);
+
+  uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
+  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+  resetBuffer(uart_buf,UART_BUFFER_SIZE);
+
+  HAL_Delay(1000);
+
+  if(f_mount(&fs, "", 1) != FR_OK)
+	  Error_Handler();
+
+  r = openFileForAppend(&fil, path);
+  if(r == 0)
+	  Error_Handler();
+
+
+  fres = f_getfree("", &fre_clust, &pfs);
+  if(fres != FR_OK)
+	  Error_Handler();
+
+  totalSpace = calculateTotalCardSpace(pfs);
+  freeSpace = calculateFreeCardSpace(pfs, &fre_clust);
+
+  uart_buf_len = sprintf(uart_buf, "Total SD space: %d\r\n", totalSpace);
+  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+  resetBuffer(uart_buf, UART_BUFFER_SIZE);
+
+  uart_buf_len = sprintf(uart_buf, "Free SD space: %d\r\n", freeSpace);
+  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
+  resetBuffer(uart_buf, UART_BUFFER_SIZE);
+
+  if(freeSpace < 1)
+	  Error_Handler();
+
+  f_puts("This is a test!\n", &fil);
+  f_puts("Hello World!\n", &fil);
+
+  fres = f_close(&fil);
+  if(fres != FR_OK)
+	  Error_Handler();
+
+
+  r = openFileForAppend(&fil, path);
+  if(r == 0)
+	  Error_Handler();
+
+  f_puts("This is the appended line!", &fil);
+
+  fres = f_close(&fil);
+  if(fres != FR_OK)
+	  Error_Handler();
+
+
+  r = openFileForReading(&fil, path);
+  if(r ==0)
+	  Error_Handler();
+
+
+  while(f_gets(buff, sizeof(buff), &fil))
+  {
+		/* SWV output */
+	  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
+  }
+
+	/* Close file */
+  fres = f_close(&fil);
+  if(fres != FR_OK)
+	  Error_Handler();
+
+	/* Unmount SDCARD */
+  fres = f_mount(NULL, "", 1);
+  if(fres != FR_OK)
+	  Error_Handler();
+
+  resetBuffer(buff,BUFFER_SIZE);
+ /* HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
   sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
@@ -159,7 +251,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  status = STATUS_ERROR;
+	/*  status = STATUS_ERROR;
 	  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
 
 	  if (status == STATUS_OK)
@@ -179,7 +271,7 @@ int main(void)
 			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
 			  //HAL_Delay(1);
 		  }
-	  }
+	  }*/
   }
   /* USER CODE END 3 */
 }
@@ -229,6 +321,12 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void resetBuffer(char* buffer, uint32_t buff_size)
+{
+	for(int i = 0; i < buff_size; i++)
+		buffer[i] = '\0';
+}
 
 
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
