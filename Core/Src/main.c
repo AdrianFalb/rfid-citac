@@ -131,6 +131,7 @@ int main(void)
   MX_FATFS_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  /*
   resetBuffer(buff, BUFFER_SIZE);
 
   uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
@@ -191,22 +192,22 @@ int main(void)
 
   while(f_gets(buff, sizeof(buff), &fil))
   {
-		/* SWV output */
+		/* SWV output *//*
 	  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
   }
 
-	/* Close file */
+	/* Close file *//*
   fres = f_close(&fil);
   if(fres != FR_OK)
 	  Error_Handler();
 
 	/* Unmount SDCARD */
-  fres = f_mount(NULL, "", 1);
+  /*fres = f_mount(NULL, "", 1);
   if(fres != FR_OK)
-	  Error_Handler();
+	  Error_Handler();*/
 
-  resetBuffer(buff,BUFFER_SIZE);
- /* HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+  //resetBuffer(buff,BUFFER_SIZE);
+  /*HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
   sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
@@ -229,7 +230,7 @@ int main(void)
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
-  }
+  */
   // Initialize MFRC522 and read the version
   uint8_t status;
   uint8_t card_buffer[MAX_LEN+1];
@@ -251,7 +252,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	/*  status = STATUS_ERROR;
+	  status = STATUS_ERROR;
 	  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
 
 	  if (status == STATUS_OK)
@@ -271,7 +272,7 @@ int main(void)
 			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
 			  //HAL_Delay(1);
 		  }
-	  }*/
+	  }
   }
   /* USER CODE END 3 */
 }
