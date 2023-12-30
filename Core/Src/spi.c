@@ -21,10 +21,8 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 SPI_HandleTypeDef hspi1;
+/* USER CODE END 0 */
 
 /* SPI1 init function */
 void MX_SPI1_Init(void)
@@ -63,7 +61,6 @@ void MX_SPI1_Init(void)
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
-
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(spiHandle->Instance==SPI1)
   {
@@ -85,7 +82,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
   /* USER CODE END SPI1_MspInit 1 */
