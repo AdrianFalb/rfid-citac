@@ -33,9 +33,7 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-#define SD_CS_Pin GPIO_PIN_8
-#define SD_CS_GPIO_Port GPIOA
-#define SD_SPI_HANDLE hspi1
+
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);

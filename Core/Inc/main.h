@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define DISPLAY_CD_PIN_GPIO_Port GPIOA
 #define DISPLAY_RESET_PIN_Pin GPIO_PIN_12
 #define DISPLAY_RESET_PIN_GPIO_Port GPIOA
+
+
 #define SD_SPI_HANDLE hspi1
 /* USER CODE BEGIN Private defines */
 

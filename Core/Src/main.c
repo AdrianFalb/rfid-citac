@@ -71,12 +71,16 @@ char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 char *delim = " :";
 
 #define BUFFER_SIZE 128
-#define UART_BUFFER_SIZE 50
+#define UART_BUFFER_SIZE 128
 
 char buff[BUFFER_SIZE];
 char uart_buf[UART_BUFFER_SIZE];
 
-char path[] = "newFile.txt";
+char bufftest[BUFFER_SIZE];
+
+char path[] = "newFile2.txt";
+char code[] = "65748";
+char date[] = "31_12_2224";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -132,17 +136,29 @@ int main(void)
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   resetBuffer(buff, BUFFER_SIZE);
+  resetBuffer(uart_buf, UART_BUFFER_SIZE);
+  resetBuffer(bufftest, BUFFER_SIZE);
 
-  uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
+  if(f_mount(&fs, "", 1) != FR_OK)
+	  Error_Handler();
+
+  r = createDirectory(code);
+  if(r == 0)
+	  Error_Handler();
+
+  strcpy(bufftest, "/");
+  strcat(bufftest,code);
+  strcat(bufftest, "/");
+  strcat(bufftest, date);
+  strcat(bufftest, ".TXT");
+
+  uart_buf_len = sprintf(uart_buf, bufftest);
   HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
   resetBuffer(uart_buf,UART_BUFFER_SIZE);
 
   HAL_Delay(1000);
 
-  if(f_mount(&fs, "", 1) != FR_OK)
-	  Error_Handler();
-
-  r = openFileForAppend(&fil, path);
+  r = openFileForAppend(&fil, bufftest);
   if(r == 0)
 	  Error_Handler();
 
@@ -173,7 +189,7 @@ int main(void)
 	  Error_Handler();
 
 
-  r = openFileForAppend(&fil, path);
+  r = openFileForAppend(&fil, bufftest);
   if(r == 0)
 	  Error_Handler();
 
@@ -184,7 +200,7 @@ int main(void)
 	  Error_Handler();
 
 
-  r = openFileForReading(&fil, path);
+  r = openFileForReading(&fil, bufftest);
   if(r ==0)
 	  Error_Handler();
 

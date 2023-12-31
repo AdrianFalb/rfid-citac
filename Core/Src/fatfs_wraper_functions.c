@@ -6,6 +6,17 @@
  */
 #include "fatfs_wraper_functions.h"
 
+uint8_t createDirectory(char* path)
+{
+	FRESULT res;
+
+	res = f_mkdir(path);
+
+	if(res != FR_OK && res != FR_EXIST)
+		return 0;
+
+	return 1;
+}
 
 uint8_t openFileForWriting(FIL* fil, char* path)
 {
@@ -36,7 +47,6 @@ uint8_t openFileForReading(FIL* fil, char* path)
 uint8_t openFileForAppend(FIL* fil, char* path)
 {
 	FRESULT res;
-
 
 	res = f_open(fil, path, FA_OPEN_ALWAYS | FA_WRITE);
 	if(res == FR_OK){

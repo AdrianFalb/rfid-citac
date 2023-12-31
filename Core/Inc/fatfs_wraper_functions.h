@@ -22,4 +22,6 @@ uint8_t openFileForAppend(FIL* fil, char* path);
 uint32_t calculateTotalCardSpace(FATFS* pfs);
 uint32_t calculateFreeCardSpace(FATFS* pfs, DWORD* fre_clust);
 
+uint8_t createDirectory(char* path);
+
 #endif /* INC_FATFS_WRAPER_FUNCTIONS_H_ */
