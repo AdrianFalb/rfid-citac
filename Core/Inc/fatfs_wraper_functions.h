@@ -24,4 +24,6 @@ uint32_t calculateFreeCardSpace(FATFS* pfs, DWORD* fre_clust);
 
 uint8_t createDirectory(char* path);
 
+void createPathToFile(char* buff, char* dir, char* date);
+
 #endif /* INC_FATFS_WRAPER_FUNCTIONS_H_ */

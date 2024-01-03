@@ -74,3 +74,14 @@ uint32_t calculateFreeCardSpace(FATFS* pfs, DWORD* fre_clust)
 {
 	return (uint32_t)(*fre_clust * pfs->csize * 0.5);
 }
+
+void createPathToFile(char* buff, char* dir, char* date)
+{
+	strcpy(buff, "/");
+	strcat(buff,dir);
+	strcat(buff,"/");
+	strcat(dir,"_");
+	strcat(dir,date);
+	strcat(buff,dir);
+	strcat(buff,".TXT");
+}
