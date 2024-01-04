@@ -117,6 +117,8 @@ uint8_t lcdTextX(uint8_t x);
 // it easy to place text
 uint8_t lcdTextY(uint8_t y);
 
+//SPI
+void (*ILI9163_SPI_TransmitData)(SPI_HandleTypeDef* hspi, uint8_t* data, uint16_t size);
 //	LCD function prototypes
 void lcdReset(void);
 void lcdWriteCommand(uint8_t address);

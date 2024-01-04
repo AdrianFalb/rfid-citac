@@ -219,9 +219,10 @@ int main(void)
 	  Error_Handler();
 
   // START - 01 - TEST DISPLAY
+  	ILI9163_RegisterCallback(SPI_TransmitData);
 	HAL_Delay(50);
 
-	lcdInitialise(LCD_ORIENTATION3);
+	lcdInitialise(192);
 	lcdClearDisplay(decodeRgbValue(0, 0, 0));
 
 	lcdPutS("Ahojte kamarati", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));

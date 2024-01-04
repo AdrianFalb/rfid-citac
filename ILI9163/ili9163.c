@@ -28,6 +28,12 @@
 
 // Low-level LCD driving functions --------------------------------------------------------------------------
 
+void ILI9163_RegisterCallback(uint8_t *callback1) {
+
+	if(callback1 != 0){
+		ILI9163_SPI_TransmitData = callback1;
+	}
+}
 // Reset the LCD hardware
 void lcdReset(void)
 {
@@ -42,7 +48,7 @@ void lcdWriteCommand(uint8_t address)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_RESET);
-	SPI_TransmitData(&SD_SPI_HANDLE, &address, 1);
+	ILI9163_SPI_TransmitData(&SD_SPI_HANDLE, &address, 1);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_SET);
 }
 
@@ -50,7 +56,7 @@ void lcdWriteParameter(uint8_t parameter)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_RESET);
-	SPI_TransmitData(&SD_SPI_HANDLE, &parameter, 1);
+	ILI9163_SPI_TransmitData(&SD_SPI_HANDLE, &parameter, 1);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_SET);
 }
 
@@ -58,8 +64,8 @@ void lcdWriteData(uint8_t dataByte1, uint8_t dataByte2)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_RESET);
-	SPI_TransmitData(&SD_SPI_HANDLE, &dataByte1, 1);
-	SPI_TransmitData(&SD_SPI_HANDLE, &dataByte2, 1);
+	ILI9163_SPI_TransmitData(&SD_SPI_HANDLE, &dataByte1, 1);
+	ILI9163_SPI_TransmitData(&SD_SPI_HANDLE, &dataByte2, 1);
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_SET);
 }
 
