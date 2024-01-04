@@ -296,9 +296,6 @@ int main(void)
 		  	  {
 		  		  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
 
-				  if(strlen(bld) > 0)
-					  createPathToFile(path, buf_hex, bld);
-
   				  if(f_mount(&fs, "", 1) != FR_OK)
   					  Error_Handler();
 
@@ -306,6 +303,15 @@ int main(void)
 		  		  if(r == 0) {
 		  			  Error_Handler();
 		  		  }
+
+		  		 char buf_hex_copy[12];
+		  		 strcpy(buf_hex_copy,buf_hex);
+
+				  if(strlen(bld) > 0)
+					  createPathToFile(path, buf_hex, bld);
+
+				  resetBuffer(buf_hex, sizeof(buf_hex));
+				  strcpy(buf_hex, buf_hex_copy);
 
   				  HAL_Delay(1000);
 
@@ -360,7 +366,7 @@ int main(void)
   				  resetBuffer(buff, BUFFER_SIZE);
   				  resetBuffer(bld, sizeof(bld));
   				  resetBuffer(tm, sizeof(tm));
-
+  				  resetBuffer(buf_hex, sizeof(buf_hex));
 		  	  }
 	  }
   }
