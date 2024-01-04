@@ -95,7 +95,7 @@ uint32_t totalSpace, freeSpace;
 uint32_t uart_buf_len;
 
 uint8_t r;
-uint8_t buttonState;
+uint8_t buttonState = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -147,30 +147,8 @@ int main(void)
   resetBuffer(uart_buf, UART_BUFFER_SIZE);
   resetBuffer(path, BUFFER_SIZE);
 
-  if(f_mount(&fs, "", 1) != FR_OK)
-	  Error_Handler();
 
-  HAL_Delay(1000);
-
-  fres = f_getfree("", &fre_clust, &pfs);
-  if(fres != FR_OK)
-	  Error_Handler();
-
-  totalSpace = calculateTotalCardSpace(pfs);
-  freeSpace = calculateFreeCardSpace(pfs, &fre_clust);
-
-  uart_buf_len = sprintf(uart_buf, "Total SD space: %d\r\n", totalSpace);
-  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-  resetBuffer(uart_buf, UART_BUFFER_SIZE);
-
-  uart_buf_len = sprintf(uart_buf, "Free SD space: %d\r\n", freeSpace);
-  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-  resetBuffer(uart_buf, UART_BUFFER_SIZE);
-
-  if(freeSpace < 1)
-	  Error_Handler();
-
-  buttonState = 1;
+  uint8_t not_vypis = 0;
   HAL_Delay(1000);
 
   //while(f_gets(buff, sizeof(buff), &fil))
@@ -195,9 +173,7 @@ int main(void)
 
 	lcdInitialise(192);
 	lcdClearDisplay(decodeRgbValue(0, 0, 0));
-
-//	lcdPutS("Ahojte kamarati", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));
-	//lcdPutS("Juchuuuu zimaaa", lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+	lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 	HAL_Delay(1000);
   // END - 01 - TEST DISPLAY
@@ -239,6 +215,10 @@ int main(void)
   memset(message_buffer, 0, sizeof(message_buffer));
   snprintf(message_buffer, sizeof(message_buffer), version_buffer);
   HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);*/
+
+  // Enter sleep mode
+  /*HAL_SuspendTick();
+  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -249,69 +229,139 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if (uid_card_found == 0)
-	  {
-		  status = STATUS_ERROR;
-		  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
+	  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+	  RTC_DateTypeDef sDate;
+	  RTC_TimeTypeDef sTime;
+	  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
+	  sDate.Month = RTC_MONTH_JANUARY;
+	  sDate.Date = 0x1;
+	  sTime.Hours = 0x12;
+	  sTime.Minutes = 0x00;
+	  sTime.Seconds = 0x00;
+	  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
 
-		  if (status == STATUS_OK)
+	  setBuildTime(&sDate, &sTime);
+
+	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	      Error_Handler();
+	  }
+
+	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+		  Error_Handler();
+	  }
+
+	  if (buttonState > 0)
+	  {
+		  if (not_vypis == 0)
 		  {
-			  memset(message_buffer, 0, sizeof(message_buffer));
-			  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
+			  HAL_Delay(100);
+			  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+			  lcdPutS("Prilozte kartu...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+			  HAL_Delay(100);
+			  not_vypis = 1;
+		  }
 
-			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
-			  //HAL_Delay(1);
+		  // Read card
+		  if (uid_card_found == 0)
+		  {
+			  status = STATUS_ERROR;
+			  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
 
-			  status = MFRC522_PICC_Anticollision(card_buffer);
 			  if (status == STATUS_OK)
-			  {
-				  memset(message_buffer, 0, sizeof(message_buffer));
-				  snprintf(message_buffer, sizeof(message_buffer), "\n\rUID: %X %X %X %X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
+		  		  {
+		  			  memset(message_buffer, 0, sizeof(message_buffer));
+		  			  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
 
-				  uid_card_found = 1;
+		  			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
+		  			  //HAL_Delay(1);
 
-				  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
-				  //HAL_Delay(1);
-			  }
-		  }
-	  }
-	  else if (uid_card_found == 1)
-	  {
-		  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
-		  r = createDirectory(buf_hex);
-		  if(r == 0){
-			  Error_Handler();
-		  }
+		  			  status = MFRC522_PICC_Anticollision(card_buffer);
+		  			  if (status == STATUS_OK)
+		  			  {
+		  				  memset(message_buffer, 0, sizeof(message_buffer));
+		  				  snprintf(message_buffer, sizeof(message_buffer), "\n\rUID: %X %X %X %X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
 
-		  if(strlen(bld) > 0)
-			  createPathToFile(path, buf_hex, bld);
+		  				  uid_card_found = 1;
 
-		  r = openFileForAppend(&fil, path);
-		  if(r == 0){
-			  Error_Handler();
-		  }
 
-		  f_printf(&fil,"%s,%s,%s,%d;\r\n", buf_hex, bld, tm, buttonState);
+		  				  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
+		  				  //HAL_Delay(1);
+		  			  }
+		  		  }
+		  	  }
 
-		  r = f_close(&fil);
+		  	  if (uid_card_found == 1)
+		  	  {
+		  		  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
 
-		  uid_card_found = 2;
-	  }
-	  else if (uid_card_found == 2)
-	  {
-			lcdClearDisplay(decodeRgbValue(0, 0, 0));
+				  if(strlen(bld) > 0)
+					  createPathToFile(path, buf_hex, bld);
 
-			if(buttonState){
-				strcpy(buff,"Príchod: ");
-				strcat(buff,tm);
-			}
-			else{
-				strcpy(buff,"Odchod: ");
-				strcat(buff,tm);
-			}
+  				  if(f_mount(&fs, "", 1) != FR_OK)
+  					  Error_Handler();
 
-			lcdPutS(buf_hex, lcdTextX(2), lcdTextY(1), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
-			lcdPutS(buff, lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+		  		  r = createDirectory(buf_hex);
+		  		  if(r == 0) {
+		  			  Error_Handler();
+		  		  }
+
+  				  HAL_Delay(1000);
+
+				  r = openFileForAppend(&fil, path);
+				  if(r == 0){
+					  Error_Handler();
+				  }
+
+				  f_printf(&fil,"%s,%s,%s,%d;\r\n", buf_hex, bld, tm, buttonState);
+
+				  // Output to LCD display
+				  HAL_Delay(100);
+				  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+
+				  switch (buttonState)
+				  {
+				  	  case 1:
+						strcpy(buff,"Prichod: ");
+						strcat(buff, tm);
+						break;
+				  	  case 2:
+				  		strcpy(buff,"Odchod: ");
+				  		strcat(buff, tm);
+				  		break;
+				  	  default:
+				  		strcpy(buff,"???: ");
+		  		 		strcat(buff, tm);
+		  		 		break;
+				  	}
+
+				  lcdPutS(buf_hex, lcdTextX(2), lcdTextY(1), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+		 		  lcdPutS(buff, lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
+		 		  // Close file
+  				  fres = f_close(&fil);
+ 				  if (fres != FR_OK)
+  					  Error_Handler();
+
+ 				  // Unmount SDCARD
+  				  fres = f_mount(NULL, "", 1);
+  				  if (fres != FR_OK)
+  				      Error_Handler();
+
+  				  // Clear display
+  				  HAL_Delay(5000);
+  				  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+  				  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(6), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+  				  uid_card_found = 0;
+  				  buttonState = 0;
+  				  not_vypis = 0;
+
+  				  resetBuffer(buff, BUFFER_SIZE);
+  				  resetBuffer(bld, sizeof(bld));
+  				  resetBuffer(tm, sizeof(tm));
+
+		  	  }
 	  }
   }
   /* USER CODE END 3 */
@@ -362,6 +412,34 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+  * @brief  EXTI line detection callback.
+  * @param  GPIO_Pin Specifies the port pin connected to corresponding EXTI line.
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	// Wake up from sleep mode
+	//HAL_ResumeTick();
+
+	if(buttonState > 0)
+		return;
+
+	if (GPIO_Pin == PRICHOD_Pin)
+	{
+		buttonState = 1;
+	}
+	else if (GPIO_Pin == ODCHOD_Pin)
+	{
+		buttonState = 2;
+	}
+	else
+	{
+		buttonState = 0;
+		__NOP();
+	}
+}
 
 void resetBuffer(char* buffer, uint32_t buff_size)
 {

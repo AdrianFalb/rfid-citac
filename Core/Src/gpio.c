@@ -50,8 +50,8 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PAPin PAPin */
   GPIO_InitStruct.Pin = PRICHOD_Pin|ODCHOD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
