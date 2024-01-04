@@ -218,6 +218,18 @@ int main(void)
   if(fres != FR_OK)
 	  Error_Handler();
 
+  // START - 01 - TEST DISPLAY
+	HAL_Delay(50);
+
+	lcdInitialise(LCD_ORIENTATION3);
+	lcdClearDisplay(decodeRgbValue(0, 0, 0));
+
+	lcdPutS("Ahojte kamarati", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));
+	lcdPutS("Juchuuuu zimaaa", lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
+	uint8_t state = 0;
+  // END - 01 - TEST DISPLAY
+
   //resetBuffer(buff,BUFFER_SIZE);
   /*HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
