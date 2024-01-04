@@ -62,10 +62,14 @@
 /* USER CODE BEGIN PV */
 char version_buffer[128];
 char message_buffer[128];
+char buf_hex[12];
+
+uint8_t uid_card_found = 0;
 
 RTC_TimeTypeDef curTime;
 UART_HandleTypeDef huart1;
 char bld[40];
+char tm[40];
 char buf[25];
 char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 char *delim = " :";
@@ -81,6 +85,17 @@ char bufftest[BUFFER_SIZE];
 char path[BUFFER_SIZE];
 char code[] = "65748";
 char date[] = "03_01_2024";
+
+FATFS fs;
+FATFS *pfs;
+FIL fil;
+FRESULT fres;
+DWORD fre_clust;
+uint32_t totalSpace, freeSpace;
+uint32_t uart_buf_len;
+
+uint8_t r;
+uint8_t buttonState;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,15 +116,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	  FATFS fs;
-	  FATFS *pfs;
-	  FIL fil;
-	  FRESULT fres;
-	  DWORD fre_clust;
-	  uint32_t totalSpace, freeSpace;
-	  uint32_t uart_buf_len;
 
-	  uint8_t r;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -143,22 +150,7 @@ int main(void)
   if(f_mount(&fs, "", 1) != FR_OK)
 	  Error_Handler();
 
-  r = createDirectory(code);
-  if(r == 0)
-	  Error_Handler();
-
-  createPathToFile(path, code, date);
-
-  uart_buf_len = sprintf(uart_buf, path);
-  HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
-  resetBuffer(uart_buf,UART_BUFFER_SIZE);
-
   HAL_Delay(1000);
-
-  r = openFileForAppend(&fil, path);
-  if(r == 0)
-	  Error_Handler();
-
 
   fres = f_getfree("", &fre_clust, &pfs);
   if(fres != FR_OK)
@@ -178,45 +170,24 @@ int main(void)
   if(freeSpace < 1)
 	  Error_Handler();
 
-  f_puts("This is a test!\n", &fil);
-  f_puts("Hello World!\n", &fil);
+  buttonState = 1;
+  HAL_Delay(1000);
 
-  fres = f_close(&fil);
-  if(fres != FR_OK)
-	  Error_Handler();
-
-
-  r = openFileForAppend(&fil, path);
-  if(r == 0)
-	  Error_Handler();
-
-  f_puts("This is the appended line!", &fil);
-
-  fres = f_close(&fil);
-  if(fres != FR_OK)
-	  Error_Handler();
-
-
-  r = openFileForReading(&fil, path);
-  if(r ==0)
-	  Error_Handler();
-
-
-  while(f_gets(buff, sizeof(buff), &fil))
-  {
+  //while(f_gets(buff, sizeof(buff), &fil))
+  //{
 		/* SWV output */
-	  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
-  }
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
+  //}
 
 	/* Close file */
-  fres = f_close(&fil);
-  if(fres != FR_OK)
-	  Error_Handler();
+  //fres = f_close(&fil);
+  //if(fres != FR_OK)
+	//  Error_Handler();
 
 	/* Unmount SDCARD */
-  fres = f_mount(NULL, "", 1);
-  if(fres != FR_OK)
-	  Error_Handler();
+  //fres = f_mount(NULL, "", 1);
+  //if(fres != FR_OK)
+	//  Error_Handler();
 
   // START - 01 - TEST DISPLAY
   	ILI9163_RegisterCallback(SPI_TransmitData);
@@ -225,10 +196,10 @@ int main(void)
 	lcdInitialise(192);
 	lcdClearDisplay(decodeRgbValue(0, 0, 0));
 
-	lcdPutS("Ahojte kamarati", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));
-	lcdPutS("Juchuuuu zimaaa", lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+//	lcdPutS("Ahojte kamarati", lcdTextX(2), lcdTextY(1), decodeRgbValue(0, 0, 0), decodeRgbValue(31, 31, 31));
+	//lcdPutS("Juchuuuu zimaaa", lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
-	uint8_t state = 0;
+	HAL_Delay(1000);
   // END - 01 - TEST DISPLAY
 
   //resetBuffer(buff,BUFFER_SIZE);
@@ -254,20 +225,20 @@ int main(void)
 
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
   {
-    Error_Handler();
+    Error_Handler();*/
 
   // Initialize MFRC522 and read the version
-/*  uint8_t status;
-  uint8_t card_buffer[MAX_LEN+1];
+  uint8_t status;
+  char card_buffer[4];
 
   MFRC522_PCD_Init();
-  HAL_Delay(10);
+  HAL_Delay(1000);
 
-  MFRC522_PCD_GetVersion(version_buffer, sizeof(version_buffer));
+  /*MFRC522_PCD_GetVersion(version_buffer, sizeof(version_buffer));
 
   memset(message_buffer, 0, sizeof(message_buffer));
   snprintf(message_buffer, sizeof(message_buffer), version_buffer);
-  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
+  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -275,29 +246,96 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-	/*  status = STATUS_ERROR;
-	  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
-
-	  if (status == STATUS_OK)
+	  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+	  RTC_DateTypeDef sDate;
+	  RTC_TimeTypeDef sTime;
+	  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
+	  sDate.Month = RTC_MONTH_JANUARY;
+	  sDate.Date = 0x1;
+	  sTime.Hours = 0x12;
+	  sTime.Minutes = 0x00;
+	  sTime.Seconds = 0x00;
+	  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
+	  if (sDate.Year + 2000  > 2023)
 	  {
-		  memset(message_buffer, 0, sizeof(message_buffer));
-		  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
+	      setBuildTime(&sDate, &sTime);
+	  }
 
-		  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
-		  //HAL_Delay(1);
+	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
 
-		  status = MFRC522_PICC_Anticollision(card_buffer);
+	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+    /* USER CODE BEGIN 3 */
+
+	  if (uid_card_found == 0)
+	  {
+		  status = STATUS_ERROR;
+		  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
+
 		  if (status == STATUS_OK)
 		  {
 			  memset(message_buffer, 0, sizeof(message_buffer));
-			  snprintf(message_buffer, sizeof(message_buffer), "\n\rUID: %X %X %X %X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
+			  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
 
 			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
 			  //HAL_Delay(1);
+
+			  status = MFRC522_PICC_Anticollision(card_buffer);
+			  if (status == STATUS_OK)
+			  {
+				  memset(message_buffer, 0, sizeof(message_buffer));
+				  snprintf(message_buffer, sizeof(message_buffer), "\n\rUID: %X %X %X %X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
+
+				  uid_card_found = 1;
+
+				  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
+				  //HAL_Delay(1);
+			  }
 		  }
-	  }*/
+	  }
+	  else if (uid_card_found == 1)
+	  {
+		  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
+		  r = createDirectory(buf_hex);
+		  if(r == 0){
+			  Error_Handler();
+		  }
+
+		  if(strlen(bld) > 0)
+			  createPathToFile(path, buf_hex, bld);
+
+		  r = openFileForAppend(&fil, path);
+		  if(r == 0){
+			  Error_Handler();
+		  }
+
+		  f_printf(&fil,"%s,%s,%s,%d;\r\n", buf_hex, bld, tm, buttonState);
+
+		  r = f_close(&fil);
+
+		  uid_card_found = 2;
+	  }
+	  else if (uid_card_found == 2)
+	  {
+			lcdClearDisplay(decodeRgbValue(0, 0, 0));
+
+			if(buttonState){
+				strcpy(buff,"Príchod: ");
+				strcat(buff,tm);
+			}
+			else{
+				strcpy(buff,"Odchod: ");
+				strcat(buff,tm);
+			}
+
+			lcdPutS(buf_hex, lcdTextX(2), lcdTextY(1), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+			lcdPutS(buff, lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -379,8 +417,10 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
         }
         token = strtok(NULL, delim);
     }
-    snprintf(bld, 40, "Build: %02d-%02d-%02d %02d:%02d:%02d\n", date->Year + 2000, date->Month, date->Date, time->Hours, time->Minutes, time->Seconds);
+    snprintf(bld, 40, "%02d_%02d_%02d", date->Year + 2000, date->Month, date->Date);
+    snprintf(tm, 40, "%02d:%02d:%02d", time->Hours, time->Minutes, time->Seconds);
     // Output to serial or logging mechanism of your choice
+
 }
 
 int str2month(const char *str) {

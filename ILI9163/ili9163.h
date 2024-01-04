@@ -11,6 +11,7 @@
 #define ILI9163_H_
 
 #include <stdint.h>
+#include "spi.h"
 
 // Definitions for data-bus (port D)
 #define LCD_DB0	(1 << 0)
