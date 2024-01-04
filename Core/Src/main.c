@@ -210,6 +210,21 @@ int main(void)
   MFRC522_PCD_Init();
   HAL_Delay(1000);
 
+
+  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+  RTC_DateTypeDef sDate;
+  RTC_TimeTypeDef sTime;
+  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sTime.Hours = 0x12;
+  sTime.Minutes = 0x00;
+  sTime.Seconds = 0x00;
+  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
+
+
+
+
   /*MFRC522_PCD_GetVersion(version_buffer, sizeof(version_buffer));
 
   memset(message_buffer, 0, sizeof(message_buffer));
@@ -228,18 +243,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
-	  RTC_DateTypeDef sDate;
-	  RTC_TimeTypeDef sTime;
-	  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
-	  sDate.Month = RTC_MONTH_JANUARY;
-	  sDate.Date = 0x1;
-	  sTime.Hours = 0x12;
-	  sTime.Minutes = 0x00;
-	  sTime.Seconds = 0x00;
-	  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
-
 	  setBuildTime(&sDate, &sTime);
 
 	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
@@ -251,6 +254,7 @@ int main(void)
 	  {
 		  Error_Handler();
 	  }
+
 
 	  if (buttonState > 0)
 	  {
@@ -457,7 +461,7 @@ void resetBuffer(char* buffer, uint32_t buff_size)
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 {
     // Timestamp format: "Mar 3 2019 12:34:56"
-    snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
+    //snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
     char *token = strtok(bld, delim);
     while (token)
     {
