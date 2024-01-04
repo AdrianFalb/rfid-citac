@@ -57,6 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PRICHOD_Pin GPIO_PIN_1
+#define PRICHOD_GPIO_Port GPIOA
+#define PRICHOD_EXTI_IRQn EXTI1_IRQn
+#define ODCHOD_Pin GPIO_PIN_4
+#define ODCHOD_GPIO_Port GPIOA
+#define ODCHOD_EXTI_IRQn EXTI4_IRQn
 #define SD_CS_Pin GPIO_PIN_8
 #define SD_CS_GPIO_Port GPIOA
 #define MFRC522_CS_Pin GPIO_PIN_9
@@ -68,11 +74,8 @@ void Error_Handler(void);
 #define DISPLAY_RESET_PIN_Pin GPIO_PIN_12
 #define DISPLAY_RESET_PIN_GPIO_Port GPIOA
 
-
-#define SD_SPI_HANDLE hspi1
-
 /* USER CODE BEGIN Private defines */
-
+#define SD_SPI_HANDLE hspi1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

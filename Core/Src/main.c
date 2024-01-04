@@ -246,30 +246,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
-	  RTC_DateTypeDef sDate;
-	  RTC_TimeTypeDef sTime;
-	  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
-	  sDate.Month = RTC_MONTH_JANUARY;
-	  sDate.Date = 0x1;
-	  sTime.Hours = 0x12;
-	  sTime.Minutes = 0x00;
-	  sTime.Seconds = 0x00;
-	  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
-	  if (sDate.Year + 2000  > 2023)
-	  {
-	      setBuildTime(&sDate, &sTime);
-	  }
 
-	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
-
-	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
     /* USER CODE BEGIN 3 */
 
 	  if (uid_card_found == 0)
