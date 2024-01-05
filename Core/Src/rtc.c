@@ -43,7 +43,6 @@ void MX_RTC_Init(void)
 
   /** Initialize RTC Only
   */
-  RTC->CR |= (1 << 5);
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
