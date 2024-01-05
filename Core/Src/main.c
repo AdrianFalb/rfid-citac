@@ -115,7 +115,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);
-  HAL_RTC_GetTime(&hrtc, &curDate, RTC_FORMAT_BIN);// Replace rtclock.breakTime(rtclock.now(), &curTime);
+  HAL_RTC_GetDate(&hrtc, &curDate, RTC_FORMAT_BIN);// Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
 
@@ -127,10 +127,9 @@ int main(void)
   sTime.Seconds = 0x00;
 
   HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-  if (sDate.Year + 2000 < 2019)
-  {
-      setBuildTime(&sDate, &sTime);
-  }
+
+  setBuildTime(&sDate, &sTime);
+
 
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
@@ -149,7 +148,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  	  showClock(1);
-	  	  HAL_Delay(5000);
+	  	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
