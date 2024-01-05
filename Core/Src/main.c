@@ -202,10 +202,11 @@ int main(void)
   MFRC522_PCD_Init();
   HAL_Delay(1000);
 
-  // Enter sleep mode
-  /*HAL_SuspendTick();
-  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);*/
+
   /* USER CODE END 2 */
+  // Enter sleep mode
+   HAL_SuspendTick();
+   HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -244,7 +245,7 @@ int main(void)
 				  if( diffMinutes < 0){
 				  		diffMinutes = diffMinutes + 60;
 				  }
-				  if(diffMinutes >= 1){
+				  if(diffMinutes >= 3){
 					  buttonState = 0;
 					  uid_card_found = 0;
 					  not_vypis = 0;
@@ -260,7 +261,6 @@ int main(void)
 		  			  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
 
 		  			  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
-		  			  //HAL_Delay(1);
 
 		  			  status = MFRC522_PICC_Anticollision(card_buffer);
 		  			  if (status == STATUS_OK)
@@ -304,7 +304,7 @@ int main(void)
 					  Error_Handler();
 				  }
 
-				  f_printf(&fil,"%s,%s,%s,%d;", buf_hex, bld, tm, buttonState);
+				  f_printf(&fil,"%s,%s,%s,%d;\n", buf_hex, bld, tm, buttonState);
 
 				  // Output to LCD display
 				  HAL_Delay(100);
@@ -321,8 +321,7 @@ int main(void)
 				  		strcat(buff, tm);
 				  		break;
 				  	  default:
-				  		strcpy(buff,"???: ");
-		  		 		strcat(buff, tm);
+				  		strcpy(buff,"Chyba");
 		  		 		break;
 				  	}
 
@@ -351,8 +350,12 @@ int main(void)
   				  resetBuffer(bld, sizeof(bld));
   				  resetBuffer(tm, sizeof(tm));
   				  resetBuffer(buf_hex, sizeof(buf_hex));
+  				 // Enter sleep mode
+				   HAL_SuspendTick();
+				   HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 		  	  }
 	  }
+
   }
   /* USER CODE END 3 */
 }
@@ -411,7 +414,7 @@ void SystemClock_Config(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	// Wake up from sleep mode
-	//HAL_ResumeTick();
+	HAL_ResumeTick();
 
 	if(buttonState > 0)
 		return;
@@ -452,7 +455,7 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
             token = strtok(NULL, delim);
             date->Date = atoi(token);
             token = strtok(NULL, delim);
-            date->Year = atoi(token) - 2000; // Assuming it's a two-digit year representation
+            date->Year = atoi(token) - 2000;
             token = strtok(NULL, delim);
             time->Hours = atoi(token);
             token = strtok(NULL, delim);
@@ -464,8 +467,6 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
     }
     snprintf(bld, 40, "%02d_%02d_%02d", date->Year + 2000, date->Month, date->Date);
     snprintf(tm, 40, "%02d:%02d:%02d", time->Hours, time->Minutes, time->Seconds);
-
-    // Output to serial or logging mechanism of your choice
 
 }
 
@@ -495,8 +496,6 @@ void showClock(int seconds)
   snprintf(bld, 40, "%02d_%02d_%02d", curDate.Year + 2000, curDate.Month, curDate.Date);
   snprintf(tm, 40, "%02d:%02d:%02d", curTime.Hours, curTime.Minutes, curTime.Seconds);
   testMinutes = curTime.Minutes;
-  // Print the time and date to UART
-  //HAL_UART_Transmit(&huart2, (uint8_t *)timeString, strlen(timeString), HAL_MAX_DELAY);
 }
 
 /* USER CODE END 4 */
