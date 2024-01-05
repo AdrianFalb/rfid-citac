@@ -52,42 +52,25 @@ RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart2;
 
-<<<<<<< Updated upstream
-/* USER CODE BEGIN PV */
-RTC_TimeTypeDef curTime;
-UART_HandleTypeDef huart1;
-char bld[40];
-char buf[25];
-char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-char *delim = " :";
-=======
-UART_HandleTypeDef huart2;
->>>>>>> Stashed changes
 
 /* USER CODE BEGIN PV */
 RTC_TimeTypeDef curTime;
+RTC_DateTypeDef curDate;
 UART_HandleTypeDef huart1;
 char bld[40];
 char buf[25];
 char *months[] = {"???", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 char *delim = " :";
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-<<<<<<< Updated upstream
-static void MX_GPIO_Init(void);
-static void MX_RTC_Init(void);
-static void MX_USART2_UART_Init(void);
-=======
+
 void MX_GPIO_Init(void);
 void MX_RTC_Init(void);
 void MX_USART2_UART_Init(void);
-/* USER CODE BEGIN PFP */
-void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-void showClock(int seconds);
-int str2month(const char *str);
->>>>>>> Stashed changes
 /* USER CODE BEGIN PFP */
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
 void showClock(int seconds);
@@ -131,7 +114,8 @@ int main(void)
   MX_RTC_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);
+  HAL_RTC_GetTime(&hrtc, &curDate, RTC_FORMAT_BIN);// Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
 
@@ -142,18 +126,18 @@ int main(void)
   sTime.Minutes = 0x00;
   sTime.Seconds = 0x00;
 
-  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
+  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
   if (sDate.Year + 2000 < 2019)
   {
       setBuildTime(&sDate, &sTime);
   }
 
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
 
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
@@ -165,7 +149,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  	  showClock(1);
-	  	  HAL_Delay(1000);
+	  	  HAL_Delay(5000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -220,8 +204,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-<<<<<<< Updated upstream
-static void MX_RTC_Init(void)
+void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
@@ -278,52 +261,9 @@ static void MX_RTC_Init(void)
   /* USER CODE END RTC_Init 2 */
 
 }
-=======
 
->>>>>>> Stashed changes
 
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-<<<<<<< Updated upstream
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
+void MX_GPIO_Init(void)
 {
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
@@ -334,10 +274,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
-=======
-
-
->>>>>>> Stashed changes
 
 /* USER CODE BEGIN 4 */
 
@@ -379,7 +315,6 @@ int str2month(const char *str) {
     return -1;  // Invalid month
 }
 
-<<<<<<< Updated upstream
 /*
 void showClock(int seconds)
 {
@@ -400,13 +335,11 @@ void showClock(int seconds)
   HAL_UART_Transmit(&huart2, (uint8_t *)timeString, strlen(timeString), HAL_MAX_DELAY);
 
 }*/
-=======
 
->>>>>>> Stashed changes
 
 void showClock(int seconds)
 {
-  RTC_DateTypeDef curDate;
+
   char timeString[40];
 
   HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);
