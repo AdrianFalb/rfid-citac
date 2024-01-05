@@ -86,11 +86,17 @@ BYTE CardType;			/* Card type flags */
 uint32_t spiTimerTickStart;
 uint32_t spiTimerTickDelay;
 
+/**
+ * @brief Function is used to init timer values used to determine, if the SD card communication timeout.\n
+*/
 void SPI_Timer_On(uint32_t waitTicks) {
     spiTimerTickStart = HAL_GetTick();
     spiTimerTickDelay = waitTicks;
 }
 
+/**
+ * @brief Function is used to get the timer status for the SPI communication with SD card.\n
+*/
 uint8_t SPI_Timer_Status() {
     return ((HAL_GetTick() - spiTimerTickStart) < spiTimerTickDelay);
 }
@@ -100,6 +106,12 @@ uint8_t SPI_Timer_Status() {
 /*-----------------------------------------------------------------------*/
 
 /* Exchange a byte */
+/**
+ * @brief Function is used to transmit a single byte over SPI.\n
+ * @details Function is using  HAL_SPI_TransmitReceive to send data over SPI and read data that is sent back.\n
+ * 			This is useful for SD card communication that needs to start by sending a command to SD card and reading the SD cards response.\n
+ * @param[in] dat -> data that is send over SPI
+ */
 static BYTE transmitByte (
 	BYTE dat	/* Data to send */
 )
@@ -111,6 +123,11 @@ static BYTE transmitByte (
 
 
 /* Receive multiple byte */
+/**
+ * @brief Function is used to receive multiple bytes over SPI and stores them in a buffer.\n
+ * @param[in] buff -> buffer used to store the read data
+ * @param[in] btr -> number of bytes to receive
+ */
 static void recieveMultiByte (
 	BYTE *buff,		/* Pointer to data buffer */
 	UINT btr		/* Number of bytes to receive (even number) */
@@ -123,7 +140,11 @@ static void recieveMultiByte (
 
 
 #if _USE_WRITE
-/* Send multiple byte */
+/**
+ * @brief Function is used to transmit multiple bytes over SPI to SD card.\n
+ * @param[in] buff -> data that is send over SPI
+ * @param[in] btx -> number of bytes to send
+ */
 static void transmitMultiByte (
 	const BYTE *buff,	/* Pointer to the data */
 	UINT btx			/* Number of bytes to send (even number) */
@@ -137,12 +158,17 @@ static void transmitMultiByte (
 /*-----------------------------------------------------------------------*/
 /* Wait for card ready                                                   */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used to wait for SD card to be ready for communication.\n
+ * @details Function is waits for SD card response, that it is ready to communicate.\n
+ * 			If the response is different than 0xFF, then the SD card is ready and we break the loop.\n
+ * 			Loop is also broken, if the waiting is too long (timeout).\n
+ * @param[in] wt -> amount of time that  we wait for ready state
+ */
 static int waitForSDReadyState (UINT wt)
 {
 	BYTE d;
-	//waitForSDReadyState needs its own timer, unfortunately, so it can't use the
-	//spi_timer functions
+
 	uint32_t waitSpiTimerTickStart;
 	uint32_t waitSpiTimerTickDelay;
 
@@ -150,7 +176,6 @@ static int waitForSDReadyState (UINT wt)
 	waitSpiTimerTickDelay = (uint32_t)wt;
 	do {
 		d = transmitByte(0xFF);
-		/* This loop takes a time. Insert rot_rdq() here for multitask envilonment. */
 	} while (d != 0xFF && ((HAL_GetTick() - waitSpiTimerTickStart) < waitSpiTimerTickDelay));	/* Wait for card goes ready or timeout */
 
 	return (d == 0xFF) ? 1 : 0;
@@ -161,7 +186,10 @@ static int waitForSDReadyState (UINT wt)
 /*-----------------------------------------------------------------------*/
 /* SPI_deselectSlave card and release SPI                                         */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used deselect the SD card slave peripheral.\n
+ * @details Function uses the CS_HIGH() macro to set the CS pin high.
+ */
 static void SPI_deselectSlave (void)
 {
 	CS_HIGH();		/* Set CS# high */
@@ -174,7 +202,14 @@ static void SPI_deselectSlave (void)
 /*-----------------------------------------------------------------------*/
 /* Select card and wait for ready                                        */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used select the SD card slave peripheral and waits for SD ready state.\n
+ * @details Function uses the CS_LOW() macro to set the CS pin low.\n
+ * 			It also invokes the waitForSDReadyState() with a 500 clock wait time for SD ready state.\n
+ * 			If no ready state is achieved, then the function deselects the SD card slave peripheral.\n
+ * @see SPI_deselectSlave (void)
+ * @see waitForSDReadyState (UINT wt)
+ */
 static int SPI_selectSlave (void)	/* 1:OK, 0:Timeout */
 {
 	CS_LOW();		/* Set CS# low */
@@ -185,6 +220,9 @@ static int SPI_selectSlave (void)	/* 1:OK, 0:Timeout */
 	return 0;	/* Timeout */
 }
 
+/**
+ * @brief Function that is used select the SD card slave peripheral without waiting for the SD card ready state.\n
+ */
 static void SPI_selectSlavenowait (void)
 {
 	transmitByte(0xFF);	/* Dummy clock (force DO enabled) */
@@ -195,7 +233,15 @@ static void SPI_selectSlavenowait (void)
 /*-----------------------------------------------------------------------*/
 /* Receive a data packet from the MMC                                    */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used to receive a block of data from SD card.\n
+ * @details Function sets the communication timer on and waits for confirmation from SD card.\n
+ * 			Communication is confirmed, when the token value is different than 0xFF.\n
+ * 			When the token variable is of different value than 0xFE, we can read a data block.\n
+ * 			Data is stored into a buffer, after receive the CRC is discarded.\n
+ * @param[in] buff -> pointer to buffer that is used to store data
+ * @param[in] btr -> size of data to be read
+ */
 static int recieveDatablock (	/* 1:OK, 0:Error */
 	BYTE *buff,			/* Data buffer */
 	UINT btr			/* Data block length (byte) */
@@ -222,7 +268,13 @@ static int recieveDatablock (	/* 1:OK, 0:Error */
 /*-----------------------------------------------------------------------*/
 /* Send a data packet to the MMC                                         */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used to transmit a block of data to SD card.\n
+ * @details Function waits for the SD card ready state. If no ready state is returned, then the function stops executing.\n
+ * 			After ready state a token is send to SD card, if token is not Stoptran token, then we can transmit data.\n
+ * @param[in] buff -> pointer to buffer that is used to store data
+ * @param[in] token -> token to be send to confirm, if we can transfer data
+ */
 #if _USE_WRITE
 static int transmitDatablock (	/* 1:OK, 0:Failed */
 	const BYTE *buff,	/* Ponter to 512 byte data to be sent */
@@ -250,7 +302,11 @@ static int transmitDatablock (	/* 1:OK, 0:Failed */
 /*-----------------------------------------------------------------------*/
 /* Send a command packet to the MMC                                      */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used to send the IDLE command to SD and initialize the SD card communication.\n
+ * @details Function selects the slave peripheral without waiting for ready state and transfers CMD0 (GO_IDLE_STATE command) with no argument.\n
+ *			Function then waits for the SD cards response and returns it.\n
+ */
 static BYTE sendCommandToSD_init ()
 {
 	BYTE n, res;
@@ -279,7 +335,12 @@ static BYTE sendCommandToSD_init ()
 	return res;							/* Return received response */
 }
 
-
+/**
+ * @brief Function that is used to send the a passed command to SD card.\n
+ * @details Function first needs to send CMD55, after successful sending, it can send the command.\n
+ * 			After sending the command, the function waits for the SD cards response and returns it.\n
+ * 			If the response is too long, it breaks the loop, because the response is too long and incorrect.\n
+ */
 static BYTE sendCommandToSD (		/* Return value: R1 resp (bit7==1:Failed to send) */
 	BYTE cmd,		/* Command index */
 	DWORD arg		/* Argument */
@@ -338,7 +399,13 @@ static BYTE sendCommandToSD (		/* Return value: R1 resp (bit7==1:Failed to send)
 /*-----------------------------------------------------------------------*/
 /* Initialize disk drive                                                 */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function that is used to initialize the SD card and determine, what type of  card it is based on its formating.
+ * @details Function first send the GO_IDLE command to wake up the SD card.\n
+ * 			It then sends the command again to put it int oan idle state.\n
+ * 			After going idle the SD card receives the CMD8 to determine, if the card is of type SDv2.\n
+ * 			If no, then the function sends AMCD41 command to determine if the card is of type SDv1 or MMCv3.\n
+ */
 inline DSTATUS USER_SPI_initialize (
 	BYTE drv		/* Physical drive number (0) */
 )
@@ -397,7 +464,9 @@ inline DSTATUS USER_SPI_initialize (
 /*-----------------------------------------------------------------------*/
 /* Get disk status                                                       */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function used to get the disk status of a drive (SD).
+ */
 inline DSTATUS USER_SPI_status (
 	BYTE drv		/* Physical drive number (0) */
 )
@@ -412,7 +481,13 @@ inline DSTATUS USER_SPI_status (
 /*-----------------------------------------------------------------------*/
 /* Read sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function used in user_diskio.c file to read from SD card.
+ * @details This is a function that is used to read from SD card over SPI.\n
+ * 			Depending on the number of sectors we want to read, a command is sent to the SD card.
+ * 			If the SD card response to the command with 0, then we can start reading single or multiple data blocks.\n
+ * 			After the communication, the SD card peripheral is deselected.
+ */
 inline DRESULT USER_SPI_read (
 	BYTE drv,		/* Physical drive number (0) */
 	BYTE *buff,		/* Pointer to the data buffer to store read data */
@@ -450,7 +525,13 @@ inline DRESULT USER_SPI_read (
 /*-----------------------------------------------------------------------*/
 /* Write sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
-
+/**
+ * @brief Function used in user_diskio.c file to write to the SD card.
+ * @details This is a function that is used to write data to SD card over SPI.\n
+ * 			Depending on the number of sectors we want to write to, a command is sent to the SD card.
+ * 			If the SD card response to the command with 0, then we can start writing single or multiple data blocks.\n
+ * 			After the communication, the SD card peripheral is deselected.\n
+ */
 #if _USE_WRITE
 inline DRESULT USER_SPI_write (
 	BYTE drv,			/* Physical drive number (0) */

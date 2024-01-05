@@ -117,23 +117,49 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+ * @brief Function is used to transmit data through SPI bus.\n
+ * @detials Function uses the predefined HAL_SPI_Transmit() function to transmit data.
+ * @param[in] hspi -> pointer to SPI handle structure
+ * @param[in] data -> pointer to data buffer, which is transmitted.
+ * @param[in] size -> size of the data to be transmitted.
+ */
 void SPI_TransmitData(SPI_HandleTypeDef* hspi, uint8_t* data, uint16_t size)
 {
 	HAL_SPI_Transmit(hspi, data, size, 1000);
 }
 
+/**
+ * @brief Function is used to receive data through SPI bus.\n
+ * @detials Function uses the predefined HAL_SPI_TransmitReceive() function to transmit data dummy data and recieve data back.
+ * @param[in] hspi -> pointer to SPI handle structure
+ * @param[in] dataTx -> pointer to dummy data buffer, which is transmitted before reading data (needed because of the SPI specification)
+ * @param[in] dataRx -> pointer to a buffer used to store read data
+ * @param[in] size -> size of the data to be read.
+ */
 void SPI_RecieveData(SPI_HandleTypeDef* hspi, uint8_t* dataTx, uint8_t* dataRx, uint16_t size)
 {
 	HAL_SPI_TransmitReceive(hspi, dataTx, dataRx, size, 1000);
 }
 
-
+/**
+ * @brief Function used to deselect a slave device connected to the SPI bus.\n
+ * @detials Function is used to set the specified peripherals CS pin HIGH to select it and start communication.
+ * @param[in] gpio_port -> pointer to the GPIO peripherals port
+ * @param[in] gpioPin -> PIN number (from 0 to 15)
+ */
 void CS_DESELECT(GPIO_TypeDef * gpio_port, uint16_t gpioPin)
 {
 	HAL_GPIO_WritePin(gpio_port, gpioPin, GPIO_PIN_SET);
 	HAL_Delay(2);
 }
 
+/**
+ * @brief Function used to select a slave device connected to the SPI bus.\n
+ * @detials Function is used to set the specified peripherals CS pin LOW to select it and start communication.
+ * @param[in] gpio_port -> pointer to the GPIO peripherals port
+ * @param[in] gpioPin -> PIN number (from 0 to 15)
+ */
 void CS_SELECT(GPIO_TypeDef * gpio_port, uint16_t gpioPin)
 {
 	HAL_GPIO_WritePin(gpio_port, gpioPin, GPIO_PIN_RESET);
