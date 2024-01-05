@@ -67,6 +67,7 @@ char buf_hex[12];
 uint8_t uid_card_found = 0;
 
 RTC_TimeTypeDef curTime;
+RTC_DateTypeDef curDate;
 UART_HandleTypeDef huart1;
 char bld[40];
 char tm[40];
@@ -83,8 +84,9 @@ char uart_buf[UART_BUFFER_SIZE];
 char bufftest[BUFFER_SIZE];
 
 char path[BUFFER_SIZE];
-char code[] = "65748";
-char date[] = "03_01_2024";
+
+uint8_t testMinutes = 0;
+uint8_t compareMinutes = 0;
 
 FATFS fs;
 FATFS *pfs;
@@ -96,6 +98,7 @@ uint32_t uart_buf_len;
 
 uint8_t r;
 uint8_t buttonState = 0;
+uint8_t failedCard = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -151,21 +154,6 @@ int main(void)
   uint8_t not_vypis = 0;
   HAL_Delay(1000);
 
-  //while(f_gets(buff, sizeof(buff), &fil))
-  //{
-		/* SWV output */
-//	  HAL_UART_Transmit(&huart2, (uint8_t *)buff, strlen(buff), 100);
-  //}
-
-	/* Close file */
-  //fres = f_close(&fil);
-  //if(fres != FR_OK)
-	//  Error_Handler();
-
-	/* Unmount SDCARD */
-  //fres = f_mount(NULL, "", 1);
-  //if(fres != FR_OK)
-	//  Error_Handler();
 
   // START - 01 - TEST DISPLAY
   	ILI9163_RegisterCallback(SPI_TransmitData);
@@ -176,10 +164,10 @@ int main(void)
 	lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 	HAL_Delay(1000);
-  // END - 01 - TEST DISPLAY
 
-  //resetBuffer(buff,BUFFER_SIZE);
-  /*HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
+
+  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(&hrtc, &curDate, RTC_FORMAT_BIN);// Replace rtclock.breakTime(rtclock.now(), &curTime);
   RTC_DateTypeDef sDate;
   RTC_TimeTypeDef sTime;
   sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
@@ -188,48 +176,31 @@ int main(void)
   sTime.Hours = 0x12;
   sTime.Minutes = 0x00;
   sTime.Seconds = 0x00;
-  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
-  if (sDate.Year + 2000 < 2019)
-  {
-      setBuildTime(&sDate, &sTime);
-  }
 
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+  setBuildTime(&sDate, &sTime);
+
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
 
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
   {
-    Error_Handler();*/
+    Error_Handler();
+  }
 
   // Initialize MFRC522 and read the version
   uint8_t status;
   char card_buffer[4];
 
+  uint8_t testCardFlag = 0;
+  int diffMinutes;
+
+
   MFRC522_PCD_Init();
   HAL_Delay(1000);
-
-
-  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BCD);  // Replace rtclock.breakTime(rtclock.now(), &curTime);
-  RTC_DateTypeDef sDate;
-  RTC_TimeTypeDef sTime;
-  sDate.Year = 0x23; // Set the year (e.g., 2023 - 2000)
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sTime.Hours = 0x12;
-  sTime.Minutes = 0x00;
-  sTime.Seconds = 0x00;
-  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BCD);
-
-
-
-
-  /*MFRC522_PCD_GetVersion(version_buffer, sizeof(version_buffer));
-
-  memset(message_buffer, 0, sizeof(message_buffer));
-  snprintf(message_buffer, sizeof(message_buffer), version_buffer);
-  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);*/
 
   // Enter sleep mode
   /*HAL_SuspendTick();
@@ -243,18 +214,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  setBuildTime(&sDate, &sTime);
-
-	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-	  {
-	      Error_Handler();
-	  }
-
-	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-	  {
-		  Error_Handler();
-	  }
-
+	  showClock(1);
 
 	  if (buttonState > 0)
 	  {
@@ -273,6 +233,27 @@ int main(void)
 			  status = STATUS_ERROR;
 			  status = MFRC522_PICC_RequestA(PICC_CMD_REQA, card_buffer);
 
+			  if(status != STATUS_OK && !testCardFlag){
+				  showClock(1);
+				  compareMinutes = curTime.Minutes;
+				  testCardFlag = 1;
+			  }
+
+			  else if(testCardFlag){
+				  diffMinutes = testMinutes - compareMinutes;
+				  if( diffMinutes < 0){
+				  		diffMinutes = diffMinutes + 60;
+				  }
+				  if(diffMinutes >= 1){
+					  buttonState = 0;
+					  uid_card_found = 0;
+					  not_vypis = 0;
+					  testCardFlag = 0;
+					  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+					  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+				  }
+			  }
+
 			  if (status == STATUS_OK)
 		  		  {
 		  			  memset(message_buffer, 0, sizeof(message_buffer));
@@ -289,12 +270,11 @@ int main(void)
 
 		  				  uid_card_found = 1;
 
-
 		  				  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
-		  				  //HAL_Delay(1);
+
 		  			  }
 		  		  }
-		  	  }
+		  }
 
 		  	  if (uid_card_found == 1)
 		  	  {
@@ -324,7 +304,7 @@ int main(void)
 					  Error_Handler();
 				  }
 
-				  f_printf(&fil,"%s,%s,%s,%d;\r\n", buf_hex, bld, tm, buttonState);
+				  f_printf(&fil,"%s,%s,%s,%d;", buf_hex, bld, tm, buttonState);
 
 				  // Output to LCD display
 				  HAL_Delay(100);
@@ -461,7 +441,7 @@ void resetBuffer(char* buffer, uint32_t buff_size)
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 {
     // Timestamp format: "Mar 3 2019 12:34:56"
-    //snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
+    snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
     char *token = strtok(bld, delim);
     while (token)
     {
@@ -484,6 +464,7 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
     }
     snprintf(bld, 40, "%02d_%02d_%02d", date->Year + 2000, date->Month, date->Date);
     snprintf(tm, 40, "%02d:%02d:%02d", time->Hours, time->Minutes, time->Seconds);
+
     // Output to serial or logging mechanism of your choice
 
 }
@@ -497,6 +478,26 @@ int str2month(const char *str) {
     return -1;  // Invalid month
 }
 
+void showClock(int seconds)
+{
+  char timeString[40];
+
+  snprintf(bld, 40, "%s %s\n", __DATE__, __TIME__);
+
+  HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(&hrtc, &curDate, RTC_FORMAT_BIN);
+
+  // Format the time and date information
+  snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d, %02d-%02d-%02d\r\n",
+           curTime.Hours, curTime.Minutes, curTime.Seconds,
+           curDate.Date, curDate.Month, curDate.Year + 2000);
+
+  snprintf(bld, 40, "%02d_%02d_%02d", curDate.Year + 2000, curDate.Month, curDate.Date);
+  snprintf(tm, 40, "%02d:%02d:%02d", curTime.Hours, curTime.Minutes, curTime.Seconds);
+  testMinutes = curTime.Minutes;
+  // Print the time and date to UART
+  //HAL_UART_Transmit(&huart2, (uint8_t *)timeString, strlen(timeString), HAL_MAX_DELAY);
+}
 
 /* USER CODE END 4 */
 
