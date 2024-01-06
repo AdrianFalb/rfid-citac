@@ -275,18 +275,18 @@ uint8_t MFRC522_PICC_Anticollision(uint8_t *p_ser_num)
   return status;
 }
 
-/*
- * @brief Transmits a REQuest command, Type A.
- * @note  Invites PICCs in state IDLE to go to READY and prepare for anticollision or selection. 7 bit frame.
- * @param req_mode - find cards way
- * @param tag_type - Return Card Type
- *    			0x4400 = Mifare_UltraLight
- *    			0x0400 = Mifare_One(S50)
- *    			0x0200 = Mifare_One(S70)
- *    			0x0800 = Mifare_Pro(X)
- *    			0x4403 = Mifare_DESFire
- * @retval STATUS_OK on success, STATUS_ERROR otherwise.
- */
+/**
+  * @brief Transmits a REQuest command, Type A.
+  * @note  Invites PICCs in state IDLE to go to READY and prepare for anticollision or selection. 7 bit frame.
+  * @param req_mode - find cards way
+  * @param tag_type - Return Card Type
+  *    			0x4400 = Mifare_UltraLight
+  *    			0x0400 = Mifare_One(S50)
+  *    			0x0200 = Mifare_One(S70)
+  *    			0x0800 = Mifare_Pro(X)
+  *    			0x4403 = Mifare_DESFire
+  * @retval STATUS_OK on success, STATUS_ERROR otherwise.
+  */
 uint8_t MFRC522_PICC_RequestA(uint8_t req_mode, uint8_t *tag_type)
 {
   uint8_t status;
@@ -305,15 +305,16 @@ uint8_t MFRC522_PICC_RequestA(uint8_t req_mode, uint8_t *tag_type)
 }
 
 //-----------------------------------------------
-/*
- * @brief MFRC522 and ISO14443 card communication
- * @param command MFRC522 command word
- * @param send_data pointer to data sent by MFRC522
- * @param sen_len length of data sent
- * @param back_data pointer to received data,
- * @param back_len return data bit length
- * @retval STATUS_OK on succecss, STATUS_ERROR otherwise
- */
+
+/**
+  * @brief MFRC522 and ISO14443 card communication
+  * @param command MFRC522 command word
+  * @param send_data pointer to data sent by MFRC522
+  * @param sen_len length of data sent
+  * @param back_data pointer to received data,
+  * @param back_len return data bit length
+  * @retval STATUS_OK on succecss, STATUS_ERROR otherwise
+  */
 uint8_t MFRC522_PICC_ToCard(uint8_t command, uint8_t *send_data, uint8_t send_len, uint8_t *back_data, uint8_t *back_len)
 {
   uint8_t status = STATUS_ERROR;
