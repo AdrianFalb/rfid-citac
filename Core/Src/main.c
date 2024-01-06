@@ -252,6 +252,9 @@ int main(void)
 					  testCardFlag = 0;
 					  lcdClearDisplay(decodeRgbValue(0, 0, 0));
 					  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+		  			  // Enter sleep mode
+					  HAL_SuspendTick();
+					  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 				  }
 			  }
 
