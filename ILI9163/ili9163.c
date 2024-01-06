@@ -1,40 +1,39 @@
-/*
- * ili9163.c
- *
- * This code has been ported from the ili9163lcd library for avr made
- * by Simon Inns, to run on a msp430
- *
- *  @author Simon Inns <simon.inns@gmail.com>
- * 	@author Christopher Vagnetoft (NoccyLabs)
- *	@copyright (C) 2012 Simon Inns
- * 	@copyright parts (C) 2012 NoccyLabs
- *
- * 	HAL version:
- *  Created on: Jan 2, 2024
- *  Author: izabela.trepacova
- *
- */
+/**
+ *****************************************************************************************
+  * @file    ili9163.c
+  * @brief   This code has been ported from the ili9163lcd library for avr made
+  *			 by Simon Inns, to run on a msp430 and modified to HAL version by I.Trepacova
+  ****************************************************************************************
+  *
+  * @author Simon Inns <simon.inns@gmail.com>
+  * @author Christopher Vagnetoft (NoccyLabs)
+  *	@copyright (C) 2012 Simon Inns
+  * @copyright parts (C) 2012 NoccyLabs
+  *
+  *
+  */
 
 #ifndef ILI9163_C_
 #define ILI9163_C_
 
 
 #include "ili9163.h"
+#include "font.h"
 
 #include <string.h>
 
-#include "spi.h"
-#include "font.h"
-
-// Low-level LCD driving functions --------------------------------------------------------------------------
-
+/**
+ * @brief Function is used to register a callback to transmit function for SPI communication - separation of software and hardware parts\n
+*/
 void ILI9163_RegisterCallback(uint8_t *callback1) {
 
 	if(callback1 != 0){
 		ILI9163_SPI_TransmitData = callback1;
 	}
 }
-// Reset the LCD hardware
+/**
+ * @brief Function is used to reset the display hardware\n
+*/
 void lcdReset(void)
 {
 	HAL_GPIO_WritePin(DISPLAY_RESET_PIN_GPIO_Port, DISPLAY_RESET_PIN_Pin, GPIO_PIN_RESET);
@@ -43,7 +42,10 @@ void lcdReset(void)
 	HAL_GPIO_WritePin(DISPLAY_RESET_PIN_GPIO_Port, DISPLAY_RESET_PIN_Pin, GPIO_PIN_SET);
 	HAL_Delay(100);
 }
-
+/**
+ * @brief Function is used to write command to display.\n
+ * @note Communication is done through the SPI interface.
+*/
 void lcdWriteCommand(uint8_t address)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_RESET);
@@ -52,6 +54,10 @@ void lcdWriteCommand(uint8_t address)
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_SET);
 }
 
+/**
+ * @brief The function is used to write the command parameter to the display.\n
+ * @note Communication is done through the SPI interface.
+*/
 void lcdWriteParameter(uint8_t parameter)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_SET);
@@ -60,6 +66,10 @@ void lcdWriteParameter(uint8_t parameter)
 	HAL_GPIO_WritePin(DISPLAY_CS_PIN_GPIO_Port, DISPLAY_CS_PIN_Pin, GPIO_PIN_SET);
 }
 
+/**
+ * @brief The function is used to write the command data to the display.\n
+ * @note Communication is done through the SPI interface.
+*/
 void lcdWriteData(uint8_t dataByte1, uint8_t dataByte2)
 {
 	HAL_GPIO_WritePin(DISPLAY_CD_PIN_GPIO_Port, DISPLAY_CD_PIN_Pin, GPIO_PIN_SET);
@@ -70,7 +80,10 @@ void lcdWriteData(uint8_t dataByte1, uint8_t dataByte2)
 }
 
 
-
+/**
+ * @brief The function is used to initialise display.\n
+ * @param[in] orientation -> Display orientation
+*/
 void lcdInitialise(uint8_t orientation)
 {
 
@@ -166,7 +179,10 @@ void lcdInitialise(uint8_t orientation)
 }
 
 // LCD graphics functions -----------------------------------------------------------------------------------
-
+/**
+ * @brief The function is used to clear the display and change the colour of background.\n
+ * @param[in] colour -> background colour
+*/
 void lcdClearDisplay(uint16_t colour)
 {
 	uint16_t pixel;
@@ -193,6 +209,12 @@ void lcdClearDisplay(uint16_t colour)
 	}
 }
 
+/**
+ * @brief The function is used to plot on the display with the selected color.\n
+ *  @param[in] x -> x coordinate
+ *  @param[in] y -> y coordinate
+ *  @param[in] colour -> colour
+*/
 void lcdPlot(uint8_t x, uint8_t y, uint16_t colour)
 {
 	// Horizontal Address Start Position
@@ -214,9 +236,14 @@ void lcdPlot(uint8_t x, uint8_t y, uint16_t colour)
 	lcdWriteData(colour >> 8, colour);
 }
 
-// Draw a line from x0, y0 to x1, y1
-// Note:	This is a version of Bresenham's line drawing algorithm
-//			It only draws lines from left to right!
+/**
+ * @brief The function is used to draw line from x0, y0 to x1, y1 (from left to right) on the display with the selected color.\n
+ *  @param[in] x0 -> the starting x-coordinate
+ *  @param[in] y0 -> the starting y-coordinate
+ *  @param[in] x1 -> the end x-coordinate
+ *  @param[in] y1 -> the end y-coordinate
+ *  @param[in] colour -> colour
+*/
 void lcdLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colour)
 {
 	int16_t dy = y1 - y0;
@@ -273,7 +300,14 @@ void lcdLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colour)
 	}
 }
 
-// Draw a rectangle between x0, y0 and x1, y1
+/**
+ * @brief The function is used to draw a rectangle between x0, y0 and x1, y1 on the display with the selected color.\n
+ *  @param[in] x0 -> the starting x-coordinate
+ *  @param[in] y0 -> the starting y-coordinate
+ *  @param[in] x1 -> the end x-coordinate
+ *  @param[in] y1 -> the end y-coordinate
+ *  @param[in] colour -> colour
+*/
 void lcdRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colour)
 {
 	lcdLine(x0, y0, x0, y1, colour);
@@ -282,9 +316,15 @@ void lcdRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colou
 	lcdLine(x0, y0, x1, y0, colour);
 }
 
-// Draw a filled rectangle
-// Note:	y1 must be greater than y0  and x1 must be greater than x0
-//			for this to work
+/**
+ * @brief The function is used to draw a filled rectangle between x0, y0 and x1, y1 on the display with the selected color.\n
+ * @note  y1 must be greater than y0  and x1 must be greater than x0
+ *  @param[in] x0 -> the starting x-coordinate
+ *  @param[in] y0 -> the starting y-coordinate
+ *  @param[in] x1 -> the end x-coordinate
+ *  @param[in] y1 -> the end y-coordinate
+ *  @param[in] colour -> colour
+*/
 void lcdFilledRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colour)
 {
 	uint16_t pixels;
@@ -311,10 +351,13 @@ void lcdFilledRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
 		lcdWriteData(colour >> 8, colour);;
 }
 
-// Draw a circle
-// Note:	This is another version of Bresenham's line drawing algorithm.
-//			There's plenty of documentation on the web if you are curious
-//			how this works.
+/**
+ * @brief The function is used to draw a circle on the display with the selected color.\n
+ *  @param[in] xCentre -> x-coordinate of center
+ *  @param[in] yCentre -> y-coordinate of center
+ *  @param[in] radius -> radius of the circle
+ *  @param[in] colour -> colour
+*/
 void lcdCircle(int16_t xCentre, int16_t yCentre, int16_t radius, uint16_t colour)
 {
 	int16_t x = 0, y = radius;
@@ -344,7 +387,17 @@ void lcdCircle(int16_t xCentre, int16_t yCentre, int16_t radius, uint16_t colour
 
 // LCD text manipulation functions --------------------------------------------------------------------------
 #define pgm_read_byte_near(address_short) (uint16_t)(address_short)
-// Plot a character at the specified x, y co-ordinates (top left hand corner of character)
+//
+
+/**
+ * @brief The function is used to plot a character at the specified x, y coordinates (top left hand corner of character).\n
+ * @details Among the input parameters is the choice of the background color and the color of the character.
+ *  @param[in] character -> character
+ *  @param[in] x -> x-coordinate
+ *  @param[in] y -> y-coordinate
+ *  @param[in] fgColour -> colour of character
+ *  @param[in] bgColour -> background colour of character
+*/
 void lcdPutCh(unsigned char character, uint8_t x, uint8_t y, uint16_t fgColour, uint16_t bgColour)
 {
 	uint8_t row, column;
@@ -380,23 +433,36 @@ void lcdPutCh(unsigned char character, uint8_t x, uint8_t y, uint16_t fgColour, 
 	}
 }
 
-// Translates a 3 byte RGB value into a 2 byte value for the LCD (values should be 0-31)
+/**
+ * @brief The function is used to translate a 3 byte RGB value into a 2 byte value for the display (values should be 0-31).\n
+ *  @param[in] r -> R value
+ *  @param[in] x -> G value
+ *  @param[in] y -> B value
+*/
 uint16_t decodeRgbValue(uint8_t r, uint8_t g, uint8_t b)
 {
 	return (b << 11) | (g << 6) | (r);
 }
 
-// This routine takes a row number from 0 to 20 and
-// returns the x coordinate on the screen (0-127) to make
-// it easy to place text
+
+/**
+ * @brief The function is used to takes a row number from 0 to 20 and returns the x coordinate on the screen (0-127) to make it easy to place text. \n
+*/
 uint8_t lcdTextX(uint8_t x) { return x*6; }
 
-// This routine takes a column number from 0 to 20 and
-// returns the y coordinate on the screen (0-127) to make
-// it easy to place text
+/**
+ * @brief The function is used to takes a row number from 0 to 20 and returns the y coordinate on the screen (0-127) to make it easy to place text. \n
+*/
 uint8_t lcdTextY(uint8_t y) { return y*8; }
 
-// Plot a string of characters to the LCD
+/**
+ * @brief The function is used to plot a string of characters on the display\n
+ *  @param[in] *string -> pointer string of characters
+ *  @param[in] x -> x-coordinate
+ *  @param[in] y -> y-coordinate
+ *  @param[in] fgColour -> colour of string
+ *  @param[in] bgColour -> background colour of string
+*/
 void lcdPutS(const char *string, uint8_t x, uint8_t y, uint16_t fgColour, uint16_t bgColour)
 {
 	uint8_t origin = x;

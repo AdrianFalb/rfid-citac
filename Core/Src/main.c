@@ -155,15 +155,15 @@ int main(void)
   HAL_Delay(1000);
 
 
-  // START - 01 - TEST DISPLAY
-  	ILI9163_RegisterCallback(SPI_TransmitData);
-	HAL_Delay(50);
 
-	lcdInitialise(192);
-	lcdClearDisplay(decodeRgbValue(0, 0, 0));
-	lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+  ILI9163_RegisterCallback(SPI_TransmitData);
+  HAL_Delay(50);
 
-	HAL_Delay(1000);
+  lcdInitialise(192);
+  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+
+  HAL_Delay(1000);
 
 
   HAL_RTC_GetTime(&hrtc, &curTime, RTC_FORMAT_BIN);

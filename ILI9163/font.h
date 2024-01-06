@@ -1,8 +1,9 @@
-/*
- * font.h
+/**
+ * @file font.h
+ * @brief 5x8 Font Data
  *
- *  Created on: Jan 2, 2024
- *      Author: izabela.trepacova
+ * This font was created by Philippe Lucidarme and is available
+ * from http://piclist.com/techref/datafile/charset/8x6.htm
  */
 
 #ifndef FONT_H_

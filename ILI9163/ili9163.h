@@ -1,11 +1,15 @@
-/*
- * ili9163.h
- *
- *  Created on: Jan 2, 2024
- *      Author: izabela.trepacova
- *      This code has been ported from the ili9163lcd library for avr made
- * 		by Simon Inns, to run on a msp430
- */
+/**
+ ******************************************************************************
+  * @file    ili9163.h
+  * @brief   This code has been ported from the ili9163lcd library for avr made
+  *          by Simon Inns, to run on a msp430 and modified by I.Trepacova
+  ******************************************************************************
+  *
+  * @author Simon Inns <simon.inns@gmail.com>
+  * @author Christopher Vagnetoft (NoccyLabs)
+  *	@copyright (C) 2012 Simon Inns
+  * @copyright parts (C) 2012 NoccyLabs
+  */
 
 #ifndef ILI9163_H_
 #define ILI9163_H_
@@ -120,6 +124,7 @@ uint8_t lcdTextY(uint8_t y);
 
 //SPI
 void (*ILI9163_SPI_TransmitData)(SPI_HandleTypeDef* hspi, uint8_t* data, uint16_t size);
+void ILI9163_RegisterCallback(uint8_t *callback1);
 //	LCD function prototypes
 void lcdReset(void);
 void lcdWriteCommand(uint8_t address);
