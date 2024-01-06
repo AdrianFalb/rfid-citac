@@ -160,8 +160,6 @@ int main(void)
 	HAL_Delay(50);
 
 	lcdInitialise(192);
-	lcdClearDisplay(decodeRgbValue(0, 0, 0));
-	lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
 	HAL_Delay(1000);
 
@@ -205,8 +203,6 @@ int main(void)
 
   /* USER CODE END 2 */
   // Enter sleep mode
-   HAL_SuspendTick();
-   HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -214,7 +210,14 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+
     /* USER CODE BEGIN 3 */
+	  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+	  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+	  HAL_Delay(100);
+	  HAL_SuspendTick();
+	  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
 	  showClock(1);
 
 	  if (buttonState > 0)
@@ -250,13 +253,11 @@ int main(void)
 					  uid_card_found = 0;
 					  not_vypis = 0;
 					  testCardFlag = 0;
-					  lcdClearDisplay(decodeRgbValue(0, 0, 0));
-					  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(8), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 				  }
 			  }
 
 			  if (status == STATUS_OK)
-		  		  {
+			  {
 		  			  memset(message_buffer, 0, sizeof(message_buffer));
 		  			  snprintf(message_buffer, sizeof(message_buffer), "\n\r%X,%X,%X", card_buffer[0], card_buffer[1], card_buffer[2]);
 
@@ -273,87 +274,81 @@ int main(void)
 		  				  HAL_UART_Transmit(&huart2, (uint8_t *)message_buffer, sizeof(message_buffer), 250);
 
 		  			  }
-		  		  }
+			  }
 		  }
+		  if (uid_card_found == 1)
+		  {
+			  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
 
-		  	  if (uid_card_found == 1)
-		  	  {
-		  		  snprintf(buf_hex, sizeof(buf_hex), "%X_%X_%X_%X", card_buffer[0], card_buffer[1], card_buffer[2], card_buffer[3]);
+			  if(f_mount(&fs, "", 1) != FR_OK)
+				  Error_Handler();
 
-  				  if(f_mount(&fs, "", 1) != FR_OK)
-  					  Error_Handler();
+			  r = createDirectory(buf_hex);
 
-		  		  r = createDirectory(buf_hex);
-		  		  if(r == 0) {
-		  			  Error_Handler();
-		  		  }
+			  if(r == 0)
+		  		Error_Handler();
 
-		  		 char buf_hex_copy[12];
-		  		 strcpy(buf_hex_copy,buf_hex);
+			  char buf_hex_copy[12];
+			  strcpy(buf_hex_copy,buf_hex);
 
-				  if(strlen(bld) > 0)
-					  createPathToFile(path, buf_hex, bld);
+			  if(strlen(bld) > 0)
+				  createPathToFile(path, buf_hex, bld);
 
-				  resetBuffer(buf_hex, sizeof(buf_hex));
-				  strcpy(buf_hex, buf_hex_copy);
+			  resetBuffer(buf_hex, sizeof(buf_hex));
+			  strcpy(buf_hex, buf_hex_copy);
 
-  				  HAL_Delay(1000);
+			  HAL_Delay(1000);
 
-				  r = openFileForAppend(&fil, path);
-				  if(r == 0){
-					  Error_Handler();
-				  }
+			  r = openFileForAppend(&fil, path);
+			  if(r == 0)
+				Error_Handler();
 
-				  f_printf(&fil,"%s,%s,%s,%d;\n", buf_hex, bld, tm, buttonState);
+			  f_printf(&fil,"%s,%s,%s,%d;\n", buf_hex, bld, tm, buttonState);
 
 				  // Output to LCD display
-				  HAL_Delay(100);
-				  lcdClearDisplay(decodeRgbValue(0, 0, 0));
+			  HAL_Delay(100);
+			  lcdClearDisplay(decodeRgbValue(0, 0, 0));
 
-				  switch (buttonState)
-				  {
-				  	  case 1:
-						strcpy(buff,"Prichod: ");
-						strcat(buff, tm);
-						break;
-				  	  case 2:
-				  		strcpy(buff,"Odchod: ");
-				  		strcat(buff, tm);
-				  		break;
-				  	  default:
-				  		strcpy(buff,"Chyba");
-		  		 		break;
-				  	}
+			  switch (buttonState)
+			  {
+			  	  case 1:
+			  		  strcpy(buff,"Prichod: ");
+			  		  strcat(buff, tm);
+			  		  break;
+				  case 2:
+					  strcpy(buff,"Odchod: ");
+					  strcat(buff, tm);
+					  break;
+				  default:
+					  strcpy(buff,"Chyba");
+					  break;
+			  }
 
-				  lcdPutS(buf_hex, lcdTextX(2), lcdTextY(1), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
-		 		  lcdPutS(buff, lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+	 		  // Close file
+			  fres = f_close(&fil);
+			  if (fres != FR_OK)
+				  Error_Handler();
 
-		 		  // Close file
-  				  fres = f_close(&fil);
- 				  if (fres != FR_OK)
-  					  Error_Handler();
+				  // Unmount SDCARD
+			  fres = f_mount(NULL, "", 1);
+			  if (fres != FR_OK)
+				  Error_Handler();
 
- 				  // Unmount SDCARD
-  				  fres = f_mount(NULL, "", 1);
-  				  if (fres != FR_OK)
-  				      Error_Handler();
+			  lcdPutS(buf_hex, lcdTextX(2), lcdTextY(1), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
+			  lcdPutS(buff, lcdTextX(2), lcdTextY(4), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
 
   				  // Clear display
-  				  HAL_Delay(5000);
-  				  lcdClearDisplay(decodeRgbValue(0, 0, 0));
-  				  lcdPutS("Stlacte tlacidlo...", lcdTextX(2), lcdTextY(6), decodeRgbValue(255, 255, 255), decodeRgbValue(0, 0, 0));
-  				  uid_card_found = 0;
-  				  buttonState = 0;
-  				  not_vypis = 0;
+			  HAL_Delay(5000);
 
-  				  resetBuffer(buff, BUFFER_SIZE);
-  				  resetBuffer(bld, sizeof(bld));
-  				  resetBuffer(tm, sizeof(tm));
-  				  resetBuffer(buf_hex, sizeof(buf_hex));
-  				 // Enter sleep mode
-				   HAL_SuspendTick();
-				   HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-		  	  }
+			  uid_card_found = 0;
+			  buttonState = 0;
+			  not_vypis = 0;
+
+			  resetBuffer(buff, BUFFER_SIZE);
+			  resetBuffer(bld, sizeof(bld));
+			  resetBuffer(tm, sizeof(tm));
+			  resetBuffer(buf_hex, sizeof(buf_hex));
+		  }
 	  }
 
   }
