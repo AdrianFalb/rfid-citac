@@ -11,7 +11,7 @@ Pri správnom načítaní karty sa bude zamestnancovi podávať spätná väzba 
 ### Popis komponentov
 Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6, ktorý bude **MASTER** zariadením.
 
-V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522. RFID čítačka, LCD Displej a čítač/ zapisovač SD karty budú s mikrokontrolérom komunikovať prostredníctvom SPI zbernice.
+V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522. RFID čítačka, LCD Displej ILI9163 a čítač/ zapisovač SD karty budú s mikrokontrolérom komunikovať prostredníctvom SPI zbernice.
 Mikrokontrolér bude **MASTER** zariadením a RFID čítačka a displej budú **SLAVE** zariadeniami.
 
 Na získanie časovej značky sa využije RTC periféria, ktorá je zabudovaná v STM32F303k8T6 mikrokontroléri.
@@ -20,7 +20,7 @@ Na získanie časovej značky sa využije RTC periféria, ktorá je zabudovaná 
 
 <img src="https://github.com/AdrianFalb/rfid_citac/assets/99915031/9edfc617-d5cf-4bc0-8967-ecdeb1d0b91b" width="250" height="250">
 
-### LCD Displej
+### LCD Displej ILI9163
 
 <img src="https://github.com/AdrianFalb/rfid_citac/assets/99915031/d7f08860-f607-4102-bd43-38fc161fd7b3" width="250" height="250">
 
