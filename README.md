@@ -18,15 +18,13 @@ Na získanie časovej značky sa využije RTC periféria, ktorá je zabudovaná 
 
 ### MF RC522
 
-![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/9edfc617-d5cf-4bc0-8967-ecdeb1d0b91b)
+<img src="https://github.com/AdrianFalb/rfid_citac/assets/99915031/9edfc617-d5cf-4bc0-8967-ecdeb1d0b91b" width="250" height="250">
 
 ### LCD Displej
 
-![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/d7f08860-f607-4102-bd43-38fc161fd7b3)
+<img src="https://github.com/AdrianFalb/rfid_citac/assets/99915031/d7f08860-f607-4102-bd43-38fc161fd7b3" width="250" height="250">
 
 ### Čítač/ zapisovač SD karty
 
-![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/13999680-26db-45f4-9905-a42f376a57bd)
-
-
+<img src="https://github.com/AdrianFalb/rfid_citac/assets/99915031/13999680-26db-45f4-9905-a42f376a57bd" width="250" height="250">
 
