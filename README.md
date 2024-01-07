@@ -2,21 +2,31 @@
 
 ## Popis projektu
 ### Stručný opis zamestnaneckého systému
-Cieľom projektu je vytvoriť **zamestnanecký systém**, ktorý pomocou kariet alebo klúčeniek s integrovanými čipmi bude zaznamenávať dochádzku zamestnancov (príchody, odchody a obedové prestávky).
-Pri príchode do práce priloží zamestnanec kartičku či klúčenku k RFID čítačke. Pri úspešnom načítaní karty dostane zamestnanec spätnú väzbu prostredníctvom displeja a LED diód. Po príchode bude nasledujúce načítanie karty (odchod) reprezentovať začiatok obedovej prestávky. Nasledujúci príchod bude zaznamenaný ako koniec obedovej prestávky. Pri odchode z práce zamestnanec opäť priloží kartu k RFID čítačke čím sa zaznamená čas odchodu. Do externej pamäte sa zakaždým uloží záznam pozostávajúci z unikátneho čísla čipu, časovej značky a doplňujúcej informácie.
+Cieľom projektu je vytvoriť **zamestnanecký systém**, ktorý pomocou kariet alebo klúčeniek s integrovanými čipmi bude zaznamenávať dochádzku zamestnancov (príchody a odchody).
+Pri príchode do práce stlačí zamestnanec tlačidlo "príchod" a priloží kartičku či klúčenku k RFID čítačke. Pri úspešnom načítaní karty dostane zamestnanec spätnú väzbu prostredníctvom LCD displeja, na ktorom sa zobrazí číslo jeho karty a čas príchodu. Pri odchode z práce zamestnanec stlačí tlačidlo "odchod" a priloží kártu čik klúcenku k RFID čítačke. Na SD kartu sa pri každom odchode a príchode zapisujú informácie o unikátnom čísle čipu karty či klúčenky, časovej značky a informácia či ide o odchod alebo príchod.
 
-Pri správnom načítaní karty sa bude zamestnancovi podávať spätná väzba pomocou displeja, zelenej a červenej LED diódy. Pri úspešnom načítaní karty pri príchode a odchode sa rozsvieti zelená LED dióda na dobu 3 sekúnd a vypíše sa na displej čas príchodu respektíve odchodu. Pri neúspešnom čítaní karty zasvieti červená LED dióda po rovnakú dobu ako pri úspešnom čítaní a vypíše sa na displej, že čítanie bolo neúspešné.
-
-Každá karta alebo kľúčenka má priradený unikátny kód na základe, ktorého sa dá zistiť, ktorý zamestnanec priložil k čítačke kartu respektíve klúčenku.
+Pri správnom načítaní karty sa bude zamestnancovi podávať spätná väzba pomocou displeja vypísaním unikátneho čísla čipu karty či klúčenky. Každá karta alebo kľúčenka má priradený unikátny kód na základe, ktorého sa dá zistiť, ktorý zamestnanec priložil k čítačke kartu respektíve klúčenku. Každý zamestnanec bude mať priradú kartu s unikátnym číslom čipu na základe, ktorého sa dá uchovávať jeho dochádzka.
 
 ## Popis systému
 ### Popis komponentov
-Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6.
+Na riadenie systému sa bude využívať mikrokontrolér STM32F303k8T6, ktorý bude **MASTER** zariadením.
 
-V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522. RFID čítačka bude s mikrokontrolérom komunikovať pomocou SPI rozhrania. Displej bude komunikovať prostredníctvom I2C zbernice respektíve cez SPI rozhranie podľa dostupnosti.
+V systéme sa na čítanie kariet a klúčeniek bude využívať RFID čítačka MF RC522. RFID čítačka, LCD Displej a čítač/ zapisovač SD karty budú s mikrokontrolérom komunikovať prostredníctvom SPI zbernice.
 Mikrokontrolér bude **MASTER** zariadením a RFID čítačka a displej budú **SLAVE** zariadeniami.
 
-## Problémy
+Na získanie časovej značky sa využije RTC periféria, ktorá je zabudovaná v STM32F303k8T6 mikrokontroléri.
 
-1. Ako vyriešiť problém so zaznamenávaním času nakoľko mikrokontrolér nemá nejaký vnutorný časovač reálneho času. Časová synchronizácia môže byť spravená aj pomocou USART pripojením MCU k počítaču.
-2. 
+### MF RC522
+
+![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/9edfc617-d5cf-4bc0-8967-ecdeb1d0b91b)
+
+### LCD Displej
+
+![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/d7f08860-f607-4102-bd43-38fc161fd7b3)
+
+### Čítač/ zapisovač SD karty
+
+![image](https://github.com/AdrianFalb/rfid_citac/assets/99915031/13999680-26db-45f4-9905-a42f376a57bd)
+
+
+
