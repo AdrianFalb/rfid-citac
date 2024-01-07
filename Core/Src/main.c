@@ -444,6 +444,11 @@ void resetBuffer(char* buffer, uint32_t buff_size)
 }
 
 
+/**
+  * @brief  RTC build funcion.
+  * @note 	Extraction and separation of time and date.
+  * @retval None
+  */
 void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 {
     // Timestamp format: "Mar 3 2019 12:34:56"
@@ -473,6 +478,11 @@ void setBuildTime(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 
 }
 
+
+/**
+  * @brief 	Determinig month from string to number for RTC.
+  * @retval Month.
+  */
 int str2month(const char *str) {
     for (int i = 0; i < 12; ++i) {
         if (strncmp(str, months[i], 3) == 0) {
@@ -481,6 +491,11 @@ int str2month(const char *str) {
     }
     return -1;  // Invalid month
 }
+
+/**
+  * @brief Function for accessing RTC as needed for our application.
+  *
+  */
 
 void showClock(int seconds)
 {

@@ -25,6 +25,9 @@
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
+/**
+  * @brief  RTC basic setup with Cube IDE.
+  */
 
 /* RTC init function */
 void MX_RTC_Init(void)
